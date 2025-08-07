@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 
 const faculty = [
@@ -44,30 +45,33 @@ export function FacultySection() {
             Meet Our Expert Faculty
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Learn from the best minds in the industry - IAS officers, subject experts, and top-ranked professionals 
+            Learn from the best minds in the industry - IAS officers, subject experts, and top-ranked professionals
             who have guided thousands of students to success.
           </p>
         </div>
-
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {faculty.map((member, index) => (
             <div key={index} className="bg-primary-50 rounded-xl p-6 text-center hover:shadow-lg transition-shadow">
               <div className="mb-4">
-                <img 
-                  src={member.image || "/placeholder.svg"}
-                  alt={member.name}
-                  className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-primary-200"
-                />
+                <div className="relative w-24 h-24 mx-auto mb-4">
+                  <Image
+                    src={member.image || "/placeholder.svg"}
+                    alt={member.name}
+                    width={96}
+                    height={96}
+                    className="rounded-full object-cover border-4 border-primary-200"
+                    priority={index < 2} // Prioritize loading for first 2 images
+                  />
+                </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-1">{member.name}</h3>
                 <p className="text-primary-600 font-medium mb-2">{member.designation}</p>
                 <Badge variant="secondary" className="mb-3">{member.experience}</Badge>
               </div>
-              
+             
               <div className="space-y-2 mb-4">
                 <p className="text-sm font-medium text-gray-700">Specialization:</p>
                 <p className="text-sm text-gray-600">{member.specialization}</p>
               </div>
-
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">Key Achievements:</p>
                 <div className="space-y-1">

@@ -1,25 +1,27 @@
 'use client'
-
 import { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
+  
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <img 
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png" 
-              alt="Kanchen Academy Logo" 
+            <Image
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
+              alt="Kanchen Academy Logo"
+              width={144}
+              height={56}
               className="w-36 h-14"
+              priority
             />
           </div>
-
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#courses" className="hover:text-gray-900 font-normal text-sm font-sans text-black">Courses</a>
@@ -33,7 +35,6 @@ export function Header() {
               Start Free Trial
             </Button>
           </nav>
-
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
@@ -44,7 +45,6 @@ export function Header() {
             </button>
           </div>
         </div>
-
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
