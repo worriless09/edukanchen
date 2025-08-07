@@ -8,6 +8,39 @@ import { HRMClient, ReasoningRequest, ReasoningResponse } from '../services/hrm-
  * Combines traditional Hermann Ebbinghaus algorithm with Hierarchical Reasoning Model insights
  */
 
+// Interface definitions for type safety
+interface SessionContext {
+  session_id?: string;
+  cards_reviewed?: number;
+  session_start_time?: string; // Changed from number to string
+  fatigue_level?: number; // Changed from user_fatigue_level to fatigue_level
+}
+
+interface StudyContext {
+  subject: string;
+  topic: string;
+  difficulty_level: number;
+  session_context: SessionContext;
+}
+
+interface PerformanceFeedback {
+  level: "excellent" | "good" | "fair" | "poor";
+  message: string;
+  next_session_recommendation: string;
+  strength_areas: string[];
+  improvement_suggestions: string[];
+}
+
+interface StudyAnalytics {
+  retention_rate: number;
+  mastery_level: number;
+  estimated_memory_strength: number;
+  reasoning_quality?: number;
+  pattern_recognition?: number;
+  cognitive_efficiency?: number;
+  adaptive_difficulty?: number;
+}
+
 export interface HRMFlashcardProgress extends FlashcardProgress {
   // HRM-specific fields
   reasoning_depth_history: number[];
@@ -59,12 +92,7 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
     flashcardId: string,
     currentProgress: HRMFlashcardProgress | null,
     reviewResponse: HRMReviewResponse,
-    context: {
-      subject: string;
-      topic: string;
-      difficulty_level: number;
-      session_context: any;
-    }
+    context: StudyContext
   ): Promise<HRMReviewResult> {
 
     // Step 1: Get traditional SM-2 calculation
@@ -87,11 +115,10 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       context
     );
 
-    // Step 4: Update HRM-specific progress data
+    // Step 4: Update HRM-specific progress data (FIXED: Removed unused parameter)
     const enhancedProgress = this.updateHRMProgress(
       adaptedResult.updated_progress as HRMFlashcardProgress,
-      hrmAnalysis,
-      reviewResponse
+      hrmAnalysis
     );
 
     // Step 5: Generate adaptive recommendations
@@ -111,8 +138,8 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       ...adaptedResult,
       updated_progress: enhancedProgress,
       hrm_analysis: hrmAnalysis,
-      adaptive_recommendations,
-      learning_insights
+      adaptive_recommendations: adaptiveRecommendations,
+      learning_insights: learningInsights
     };
   }
 
@@ -123,7 +150,7 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
     userId: string,
     flashcardId: string,
     response: HRMReviewResponse,
-    context: any,
+    context: StudyContext,
     progress: HRMFlashcardProgress | null
   ): Promise<ReasoningResponse> {
 
@@ -195,10 +222,10 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
     traditionalResult: ReviewResult,
     hrmAnalysis: ReasoningResponse,
     progress: HRMFlashcardProgress | null,
-    context: any
+    context: StudyContext // Using context for subject-specific adaptations
   ): Promise<ReviewResult> {
 
-    let adaptedResult = { ...traditionalResult };
+    const adaptedResult = { ...traditionalResult };
     const { adaptive_factors, recommended_difficulty, cognitive_load } = hrmAnalysis;
 
     // 1. Adjust interval based on reasoning depth
@@ -239,6 +266,26 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       intervalMultiplier *= progress.personalized_interval_multiplier;
     }
 
+    // 6. Apply subject-specific complexity adjustment (USING CONTEXT)
+    const subjectComplexityMap: { [key: string]: number } = {
+      'mathematics': 1.2,
+      'physics': 1.15,
+      'chemistry': 1.1,
+      'biology': 1.0,
+      'history': 0.95,
+      'literature': 0.9
+    };
+    
+    const subjectMultiplier = subjectComplexityMap[context.subject?.toLowerCase() || 'default'] || 1.0;
+    intervalMultiplier *= subjectMultiplier;
+
+    // 7. Apply difficulty level adjustment (USING CONTEXT)
+    if (context.difficulty_level > 7) {
+      intervalMultiplier *= 0.9; // Harder content = more frequent review
+    } else if (context.difficulty_level < 3) {
+      intervalMultiplier *= 1.1; // Easier content = less frequent review
+    }
+
     // Calculate final adapted interval
     const adaptedInterval = Math.round(
       Math.max(1, Math.min(365, traditionalResult.interval_days * intervalMultiplier))
@@ -257,15 +304,42 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
     adaptedResult.next_review_date = adaptedDate;
     adaptedResult.ease_factor = adaptedEaseFactor;
 
+    // Create properly structured performance feedback (FIXED: No more 'any')
+const basePerformanceFeedback = adaptedResult.performance_feedback;
+
+// Type guard to check if the feedback has the expected structure
+const isCompletePerformanceFeedback = (feedback: unknown): feedback is PerformanceFeedback => {
+  return typeof feedback === 'object' && feedback !== null &&
+         'message' in feedback && 'next_session_recommendation' in feedback;
+};
+
+const structuredFeedback: PerformanceFeedback = {
+  level: (isCompletePerformanceFeedback(basePerformanceFeedback) && 'level' in basePerformanceFeedback) 
+    ? (basePerformanceFeedback as PerformanceFeedback).level 
+    : "fair",
+  message: (isCompletePerformanceFeedback(basePerformanceFeedback)) 
+    ? (basePerformanceFeedback as PerformanceFeedback).message 
+    : "Review completed",
+  next_session_recommendation: (isCompletePerformanceFeedback(basePerformanceFeedback)) 
+    ? (basePerformanceFeedback as PerformanceFeedback).next_session_recommendation 
+    : "Continue regular practice",
+  strength_areas: (isCompletePerformanceFeedback(basePerformanceFeedback) && 'strength_areas' in basePerformanceFeedback) 
+    ? (basePerformanceFeedback as PerformanceFeedback).strength_areas 
+    : [],
+  improvement_suggestions: (isCompletePerformanceFeedback(basePerformanceFeedback) && 'improvement_suggestions' in basePerformanceFeedback) 
+    ? (basePerformanceFeedback as PerformanceFeedback).improvement_suggestions 
+    : []
+};
+
     // Update performance feedback with HRM insights
     adaptedResult.performance_feedback = this.generateHRMEnhancedFeedback(
       hrmAnalysis,
-      adaptedResult.performance_feedback,
+      structuredFeedback,
       adaptedInterval
-    );
+    ) ; // Type assertion to match base interface
 
-    // Enhanced study analytics
-    adaptedResult.study_analytics = {
+    // Enhanced study analytics with proper typing
+    const updatedStudyAnalytics: StudyAnalytics = {
       ...adaptedResult.study_analytics,
       reasoning_quality: hrmAnalysis.reasoning_depth,
       pattern_recognition: hrmAnalysis.pattern_recognition,
@@ -273,16 +347,18 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       adaptive_difficulty: recommended_difficulty
     };
 
-    return adaptedResult;
+    return {
+      ...adaptedResult,
+      study_analytics: updatedStudyAnalytics
+    };
   }
 
   /**
-   * Update HRM-specific progress data
+   * Update HRM-specific progress data (FIXED: Removed unused parameter)
    */
   private static updateHRMProgress(
     progress: HRMFlashcardProgress,
-    hrmAnalysis: ReasoningResponse,
-    response: HRMReviewResponse
+    hrmAnalysis: ReasoningResponse
   ): HRMFlashcardProgress {
 
     const updatedProgress = { ...progress };
@@ -369,6 +445,10 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       multiplier *= 0.9; // High cognitive load = need more support
     }
 
+    // Factor 4: HRM confidence influence
+    const confidenceInfluence = hrmAnalysis.adaptive_factors.confidence_factor;
+    multiplier *= (0.8 + (confidenceInfluence * 0.4)); // Scale confidence to 0.8-1.2
+
     // Ensure reasonable bounds
     return Math.max(0.5, Math.min(2.0, multiplier));
   }
@@ -409,14 +489,34 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
    */
   private static generateHRMEnhancedFeedback(
     hrmAnalysis: ReasoningResponse,
-    originalFeedback: any,
+    originalFeedback: PerformanceFeedback,
     intervalDays: number
-  ) {
+  ): PerformanceFeedback & { 
+    hrm_insights: { 
+      reasoning_depth: number; 
+      pattern_recognition: number; 
+      key_strengths: string[]; 
+      improvement_areas: string[]; 
+    } 
+  } {
 
     const { reasoning_depth, pattern_recognition, learning_insights } = hrmAnalysis;
 
     let enhancedMessage = originalFeedback.message;
     let recommendation = originalFeedback.next_session_recommendation;
+    
+    // Determine enhanced level based on HRM analysis
+    let enhancedLevel: "excellent" | "good" | "fair" | "poor" = originalFeedback.level;
+    
+    if (reasoning_depth > 0.8 && pattern_recognition > 0.7) {
+      enhancedLevel = "excellent";
+    } else if (reasoning_depth > 0.6 && pattern_recognition > 0.5) {
+      enhancedLevel = "good";
+    } else if (reasoning_depth > 0.4 || pattern_recognition > 0.3) {
+      enhancedLevel = "fair";
+    } else {
+      enhancedLevel = "poor";
+    }
 
     // Add reasoning-specific feedback
     if (reasoning_depth > 0.8) {
@@ -438,10 +538,27 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
       recommendation += ` Focus areas: ${learning_insights.study_recommendations.join(', ')}.`;
     }
 
+    // Create strength areas and improvement suggestions, merging with existing ones
+    const strengthAreas = [
+      ...originalFeedback.strength_areas,
+      ...(reasoning_depth > 0.6 ? ['Strong analytical thinking'] : []),
+      ...(pattern_recognition > 0.6 ? ['Good pattern recognition'] : []),
+      ...learning_insights.reasoning_strengths
+    ];
+
+    const improvementSuggestions = [
+      ...originalFeedback.improvement_suggestions,
+      ...(reasoning_depth < 0.5 ? ['Practice step-by-step problem breakdown'] : []),
+      ...(pattern_recognition < 0.5 ? ['Work on identifying recurring patterns'] : []),
+      ...learning_insights.improvement_areas.map(area => `Focus on ${area}`)
+    ];
+
     return {
-      ...originalFeedback,
+      level: enhancedLevel,
       message: enhancedMessage,
       next_session_recommendation: recommendation,
+      strength_areas: strengthAreas,
+      improvement_suggestions: improvementSuggestions,
       hrm_insights: {
         reasoning_depth: reasoning_depth,
         pattern_recognition: pattern_recognition,
@@ -457,7 +574,7 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
   private static generateAdaptiveRecommendations(
     hrmAnalysis: ReasoningResponse,
     progress: HRMFlashcardProgress,
-    context: any
+    context: StudyContext
   ) {
 
     const recommendations = {
@@ -511,7 +628,7 @@ export class HRMSpacedRepetitionEngine extends SpacedRepetitionEngine {
    */
   private static generateComplementaryTopics(
     hrmAnalysis: ReasoningResponse,
-    context: any
+    context: StudyContext
   ): string[] {
 
     const complementaryTopics: string[] = [];

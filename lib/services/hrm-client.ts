@@ -1,9 +1,62 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+// lib/services/hrm-client.ts
+
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 /**
  * HRM Client for communicating with Hierarchical Reasoning Model service
  * Handles all interactions with the Python FastAPI HRM service
  */
+
+// Configuration interface for better type safety
+interface HRMConfig {
+  baseUrl: string;
+  timeout: number;
+  retryAttempts: number;
+}
+
+// Metadata interface for request tracking
+interface RequestMetadata {
+  requestId: string;
+  startTime: number;
+}
+
+// Service statistics interfaces
+interface ModelInfo {
+  name: string;
+  version: string;
+  parameters: number;
+  memory_usage: number;
+  gpu_memory_used?: number;
+  model_size_mb: number;
+}
+
+interface PerformanceMetrics {
+  avg_response_time: number;
+  requests_per_second: number;
+  error_rate: number;
+  uptime_percentage: number;
+  total_requests: number;
+  failed_requests: number;
+  cache_hit_rate?: number;
+}
+
+interface QueueStatus {
+  pending_requests: number;
+  active_workers: number;
+  max_queue_size: number;
+  current_load: number;
+  average_wait_time: number;
+  queue_full_events: number;
+}
+
+interface ServiceStats {
+  model_info: ModelInfo;
+  performance_metrics: PerformanceMetrics;
+  queue_status: QueueStatus;
+}
+
+// Type for flexible object properties
+type FlexibleValue = string | number | boolean | string[] | object | undefined;
 
 export interface ReasoningRequest {
   user_id: string;
@@ -23,7 +76,8 @@ export interface ReasoningRequest {
     question_text?: string;
     answer_text?: string;
     user_response?: string;
-    [key: string]: any;
+    // Replace any with specific union type
+    [key: string]: string | number | boolean | string[] | undefined;
   };
   context: {
     subject?: string;
@@ -43,7 +97,8 @@ export interface ReasoningRequest {
       session_start_time?: string;
       fatigue_level?: number;
     };
-    [key: string]: any;
+    // Replace any with specific union type
+    [key: string]: FlexibleValue;
   };
   session_id?: string;
 }
@@ -167,34 +222,74 @@ export interface HealthCheckResponse {
 
 export class HRMClient {
   private client: AxiosInstance;
-  private baseUrl: string;
-  private timeout: number;
-  private retryAttempts: number;
-  private circuitBreakerOpen: boolean;
+  private config: HRMConfig;
+  private circuitBreakers: Map<string, {
+    open: boolean;
+    failures: number;
+    lastFailure: Date;
+  }> = new Map();
   private lastHealthCheck: Date | null;
   private healthCheckInterval: number;
+  private healthCheckCache: {
+    status: HealthCheckResponse | null;
+    timestamp: number;
+  } = { status: null, timestamp: 0 };
+  private requestMetadata: Map<string, RequestMetadata> = new Map();
 
   constructor() {
-    this.baseUrl = process.env.HRM_SERVICE_URL || 'http://localhost:8000';
-    this.timeout = parseInt(process.env.HRM_TIMEOUT || '30000'); // 30 seconds
-    this.retryAttempts = parseInt(process.env.HRM_RETRY_ATTEMPTS || '3');
-    this.circuitBreakerOpen = false;
+    this.config = this.getConfig();
     this.lastHealthCheck = null;
     this.healthCheckInterval = 300000; // 5 minutes
 
     this.client = axios.create({
-      baseURL: this.baseUrl,
-      timeout: this.timeout,
+      baseURL: this.config.baseUrl,
+      timeout: this.config.timeout,
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'Kanchen-Academy-Frontend/1.0',
       },
     });
 
-    // Add request interceptor for logging
+    this.setupInterceptors();
+  }
+
+  /**
+   * Get configuration with type safety
+   */
+  private getConfig(): HRMConfig {
+    return {
+      baseUrl: process.env.HRM_SERVICE_URL || 'http://localhost:8000',
+      timeout: parseInt(process.env.HRM_TIMEOUT || '30000', 10),
+      retryAttempts: parseInt(process.env.HRM_RETRY_ATTEMPTS || '3', 10)
+    };
+  }
+
+  /**
+   * Setup request and response interceptors
+   */
+  private setupInterceptors(): void {
+    // Request interceptor with enhanced logging
     this.client.interceptors.request.use(
-      (config) => {
-        console.log(`[HRM Client] ${config.method?.toUpperCase()} ${config.url}`);
+      (config: InternalAxiosRequestConfig) => {
+        const requestId = Math.random().toString(36).substring(7);
+        const metadata: RequestMetadata = { 
+          requestId, 
+          startTime: Date.now() 
+        };
+        
+        // Store metadata using a unique key
+        this.requestMetadata.set(requestId, metadata);
+        
+        // Add request ID to headers for tracking - FIXED
+        config.headers = config.headers || {};
+        config.headers['X-Request-ID'] = requestId;
+        
+        // Set endpoint-specific timeout
+        if (config.url) {
+          config.timeout = this.getTimeoutForEndpoint(config.url);
+        }
+
+        console.log(`[HRM Client] [${requestId}] ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -203,41 +298,118 @@ export class HRMClient {
       }
     );
 
-    // Add response interceptor for error handling
+    // Response interceptor with timing
     this.client.interceptors.response.use(
       (response) => {
-        console.log(`[HRM Client] Response: ${response.status} (${response.data?.processing_time_ms || 0}ms)`);
+        const requestId = response.config.headers?.['X-Request-ID'] as string;
+        const metadata = requestId ? this.requestMetadata.get(requestId) : null;
+        const duration = metadata ? Date.now() - metadata.startTime : 0;
+        const processingTime = response.data?.processing_time_ms || 0;
+        
+        console.log(`[HRM Client] [${requestId || 'unknown'}] Response: ${response.status} (${duration}ms total, ${processingTime}ms processing)`);
+        
+        // Clean up metadata
+        if (requestId) {
+          this.requestMetadata.delete(requestId);
+        }
+        
         return response;
       },
       (error) => {
-        console.error('[HRM Client] Response error:', error);
+        const requestId = error.config?.headers?.['X-Request-ID'] as string;
+        console.error(`[HRM Client] [${requestId || 'unknown'}] Response error:`, error.message);
+        
+        // Clean up metadata
+        if (requestId) {
+          this.requestMetadata.delete(requestId);
+        }
+        
         return Promise.reject(error);
       }
     );
   }
 
   /**
+   * Get timeout for specific endpoint
+   */
+  private getTimeoutForEndpoint(endpoint: string): number {
+    const timeouts: { [key: string]: number } = {
+      '/analyze-reasoning': 30000,
+      '/optimize-schedule': 45000,
+      '/generate-quiz': 60000,
+      '/warmup': 120000,
+      '/health': 5000
+    };
+
+    // Find matching endpoint
+    const matchingEndpoint = Object.keys(timeouts).find(key => endpoint.includes(key));
+    return matchingEndpoint ? timeouts[matchingEndpoint] : this.config.timeout;
+  }
+
+  /**
+   * Check if circuit breaker is open for endpoint
+   */
+  private isCircuitOpen(endpoint: string): boolean {
+    const breaker = this.circuitBreakers.get(endpoint);
+    if (!breaker) return false;
+
+    // Reset circuit breaker if it's been 5 minutes since last failure
+    if (Date.now() - breaker.lastFailure.getTime() > 300000) {
+      this.circuitBreakers.delete(endpoint);
+      return false;
+    }
+
+    return breaker.open;
+  }
+
+  /**
+   * Handle circuit breaker logic
+   */
+  private handleCircuitBreaker(endpoint: string, error: Error | unknown): void {
+  const breaker = this.circuitBreakers.get(endpoint) || {
+    open: false,
+    failures: 0,
+    lastFailure: new Date()
+  };
+
+  breaker.failures++;
+  breaker.lastFailure = new Date();
+
+  // Open circuit breaker after 3 consecutive failures
+  if (breaker.failures >= 3) {
+    breaker.open = true;
+    console.error(`[HRM Client] Circuit breaker opened for ${endpoint} after ${breaker.failures} failures. Error: ${this.getErrorMessage(error)}`);
+  }
+
+    this.circuitBreakers.set(endpoint, breaker);
+  }
+
+  /**
    * Analyze reasoning pattern using HRM
    */
   async analyzeReasoning(request: ReasoningRequest): Promise<ReasoningResponse> {
+    const endpoint = '/analyze-reasoning';
     await this.ensureServiceHealth();
 
-    if (this.circuitBreakerOpen) {
-      throw new Error('HRM service circuit breaker is open - service unavailable');
+    if (this.isCircuitOpen(endpoint)) {
+      throw new Error(`HRM service circuit breaker is open for ${endpoint} - service unavailable`);
     }
 
     try {
       const response: AxiosResponse<ReasoningResponse> = await this.retryRequest(
-        () => this.client.post<ReasoningResponse>('/analyze-reasoning', request)
+        () => this.client.post<ReasoningResponse>(endpoint, request)
       );
 
       // Validate response structure
       this.validateReasoningResponse(response.data);
       
+      // Reset circuit breaker on success
+      this.circuitBreakers.delete(endpoint);
+      
       return response.data;
     } catch (error) {
       console.error('HRM reasoning analysis failed:', error);
-      this.handleServiceError(error);
+      this.handleCircuitBreaker(endpoint, error);
       throw new Error(`Failed to analyze reasoning pattern: ${this.getErrorMessage(error)}`);
     }
   }
@@ -246,21 +418,23 @@ export class HRMClient {
    * Generate optimized review schedule
    */
   async optimizeSchedule(request: AdaptiveScheduleRequest): Promise<AdaptiveScheduleResponse> {
+    const endpoint = '/optimize-schedule';
     await this.ensureServiceHealth();
 
-    if (this.circuitBreakerOpen) {
-      throw new Error('HRM service circuit breaker is open - service unavailable');
+    if (this.isCircuitOpen(endpoint)) {
+      throw new Error(`HRM service circuit breaker is open for ${endpoint} - service unavailable`);
     }
 
     try {
       const response: AxiosResponse<AdaptiveScheduleResponse> = await this.retryRequest(
-        () => this.client.post<AdaptiveScheduleResponse>('/optimize-schedule', request)
+        () => this.client.post<AdaptiveScheduleResponse>(endpoint, request)
       );
 
+      this.circuitBreakers.delete(endpoint);
       return response.data;
     } catch (error) {
       console.error('HRM schedule optimization failed:', error);
-      this.handleServiceError(error);
+      this.handleCircuitBreaker(endpoint, error);
       throw new Error(`Failed to optimize schedule: ${this.getErrorMessage(error)}`);
     }
   }
@@ -269,21 +443,23 @@ export class HRMClient {
    * Generate adaptive quiz questions
    */
   async generateQuiz(request: QuizGenerationRequest): Promise<QuizGenerationResponse> {
+    const endpoint = '/generate-quiz';
     await this.ensureServiceHealth();
 
-    if (this.circuitBreakerOpen) {
-      throw new Error('HRM service circuit breaker is open - service unavailable');
+    if (this.isCircuitOpen(endpoint)) {
+      throw new Error(`HRM service circuit breaker is open for ${endpoint} - service unavailable`);
     }
 
     try {
       const response: AxiosResponse<QuizGenerationResponse> = await this.retryRequest(
-        () => this.client.post<QuizGenerationResponse>('/generate-quiz', request)
+        () => this.client.post<QuizGenerationResponse>(endpoint, request)
       );
 
+      this.circuitBreakers.delete(endpoint);
       return response.data;
     } catch (error) {
       console.error('HRM quiz generation failed:', error);
-      this.handleServiceError(error);
+      this.handleCircuitBreaker(endpoint, error);
       throw new Error(`Failed to generate quiz: ${this.getErrorMessage(error)}`);
     }
   }
@@ -292,43 +468,60 @@ export class HRMClient {
    * Batch analyze multiple reasoning patterns
    */
   async batchAnalyzeReasoning(requests: ReasoningRequest[]): Promise<ReasoningResponse[]> {
+    const endpoint = '/batch-analyze-reasoning';
     await this.ensureServiceHealth();
 
-    if (this.circuitBreakerOpen) {
-      throw new Error('HRM service circuit breaker is open - service unavailable');
+    if (this.isCircuitOpen(endpoint)) {
+      throw new Error(`HRM service circuit breaker is open for ${endpoint} - service unavailable`);
     }
 
     try {
       const response: AxiosResponse<{ results: ReasoningResponse[] }> = await this.retryRequest(
-        () => this.client.post<{ results: ReasoningResponse[] }>('/batch-analyze-reasoning', {
+        () => this.client.post<{ results: ReasoningResponse[] }>(endpoint, {
           requests: requests
         })
       );
 
+      this.circuitBreakers.delete(endpoint);
       return response.data.results;
     } catch (error) {
       console.error('HRM batch analysis failed:', error);
-      this.handleServiceError(error);
+      this.handleCircuitBreaker(endpoint, error);
       throw new Error(`Failed to batch analyze reasoning: ${this.getErrorMessage(error)}`);
     }
   }
 
   /**
-   * Health check for HRM service
+   * Health check for HRM service with caching
    */
   async healthCheck(): Promise<HealthCheckResponse> {
+    const now = Date.now();
+    const cacheAge = now - this.healthCheckCache.timestamp;
+
+    // Return cached result if less than 30 seconds old
+    if (this.healthCheckCache.status && cacheAge < 30000) {
+      return this.healthCheckCache.status;
+    }
+
     try {
-      const response: AxiosResponse<HealthCheckResponse> = await this.client.get('/health', {
-        timeout: 5000 // Shorter timeout for health checks
-      });
+      const response: AxiosResponse<HealthCheckResponse> = await this.client.get('/health');
+      
+      this.healthCheckCache = {
+        status: response.data,
+        timestamp: now
+      };
       
       this.lastHealthCheck = new Date();
-      this.circuitBreakerOpen = response.data.status === 'unhealthy';
       
       return response.data;
     } catch (error) {
       console.error('HRM health check failed:', error);
-      this.circuitBreakerOpen = true;
+      
+      // Mark all circuit breakers as open on health check failure
+      this.circuitBreakers.forEach((breaker) => {
+        breaker.open = true;
+      });
+      
       throw new Error(`Health check failed: ${this.getErrorMessage(error)}`);
     }
   }
@@ -336,11 +529,7 @@ export class HRMClient {
   /**
    * Get service statistics
    */
-  async getServiceStats(): Promise<{
-    model_info: any;
-    performance_metrics: any;
-    queue_status: any;
-  }> {
+  async getServiceStats(): Promise<ServiceStats> {
     try {
       const response = await this.client.get('/stats');
       return response.data;
@@ -354,10 +543,10 @@ export class HRMClient {
    * Warm up the HRM model (useful after deployment)
    */
   async warmupModel(): Promise<{ success: boolean; warmup_time_ms: number }> {
+    const endpoint = '/warmup';
+    
     try {
-      const response = await this.client.post('/warmup', {}, {
-        timeout: 60000 // 1 minute timeout for warmup
-      });
+      const response = await this.client.post(endpoint, {});
       return response.data;
     } catch (error) {
       console.error('HRM model warmup failed:', error);
@@ -374,25 +563,28 @@ export class HRMClient {
       ? now.getTime() - this.lastHealthCheck.getTime()
       : Infinity;
 
-    // Check health if it's been more than 5 minutes or if circuit breaker is open
-    if (timeSinceLastCheck > this.healthCheckInterval || this.circuitBreakerOpen) {
-      try {
-        await this.healthCheck();
-      } catch (error) {
-        console.warn('Health check failed, proceeding with degraded service');
-      }
-    }
+    // Check health if it's been more than 5 minutes or if any circuit breaker is open
+const anyCircuitOpen = Array.from(this.circuitBreakers.values()).some(breaker => breaker.open);
+
+if (timeSinceLastCheck > this.healthCheckInterval || anyCircuitOpen) {
+  try {
+    await this.healthCheck();
+  } catch (error) {
+    console.warn('Health check failed, proceeding with degraded service. Error:', this.getErrorMessage(error));
+  }
+}
+
   }
 
   /**
-   * Retry mechanism for failed requests
+   * Retry mechanism for failed requests with exponential backoff
    */
   private async retryRequest<T>(
     requestFn: () => Promise<AxiosResponse<T>>
   ): Promise<AxiosResponse<T>> {
-    let lastError: any;
+    let lastError: Error | unknown;
 
-    for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+    for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
       try {
         return await requestFn();
       } catch (error) {
@@ -403,7 +595,7 @@ export class HRMClient {
           throw error;
         }
 
-        if (attempt < this.retryAttempts) {
+        if (attempt < this.config.retryAttempts) {
           const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff, max 10s
           console.log(`[HRM Client] Retry attempt ${attempt} after ${backoffDelay}ms`);
           await this.delay(backoffDelay);
@@ -412,20 +604,6 @@ export class HRMClient {
     }
 
     throw lastError;
-  }
-
-  /**
-   * Handle service errors and circuit breaker logic
-   */
-  private handleServiceError(error: any): void {
-    if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-        this.circuitBreakerOpen = true;
-        console.error('[HRM Client] Opening circuit breaker due to connection issues');
-      } else if (error.response?.status && error.response.status >= 500) {
-        console.error('[HRM Client] Server error detected:', error.response.status);
-      }
-    }
   }
 
   /**
@@ -448,21 +626,23 @@ export class HRMClient {
     }
 
     // Validate numeric ranges
-    if (response.reasoning_depth < 0 || response.reasoning_depth > 1) {
-      throw new Error('Invalid reasoning_depth value: must be between 0 and 1');
-    }
-    if (response.pattern_recognition < 0 || response.pattern_recognition > 1) {
-      throw new Error('Invalid pattern_recognition value: must be between 0 and 1');
-    }
-    if (response.cognitive_load < 0 || response.cognitive_load > 1) {
-      throw new Error('Invalid cognitive_load value: must be between 0 and 1');
+    const numericFields = [
+      { field: 'reasoning_depth', value: response.reasoning_depth },
+      { field: 'pattern_recognition', value: response.pattern_recognition },
+      { field: 'cognitive_load', value: response.cognitive_load }
+    ];
+
+    for (const { field, value } of numericFields) {
+      if (typeof value !== 'number' || value < 0 || value > 1) {
+        throw new Error(`Invalid ${field} value: must be a number between 0 and 1`);
+      }
     }
   }
 
   /**
    * Extract error message from various error types
    */
-  private getErrorMessage(error: any): string {
+  private getErrorMessage(error: Error | unknown): string {
     if (axios.isAxiosError(error)) {
       if (error.response?.data?.detail) {
         return error.response.data.detail;
@@ -492,16 +672,21 @@ export class HRMClient {
   /**
    * Close circuit breaker manually (for testing or manual recovery)
    */
-  closeCircuitBreaker(): void {
-    this.circuitBreakerOpen = false;
-    console.log('[HRM Client] Circuit breaker manually closed');
+  closeCircuitBreaker(endpoint?: string): void {
+    if (endpoint) {
+      this.circuitBreakers.delete(endpoint);
+      console.log(`[HRM Client] Circuit breaker manually closed for ${endpoint}`);
+    } else {
+      this.circuitBreakers.clear();
+      console.log('[HRM Client] All circuit breakers manually closed');
+    }
   }
 
   /**
    * Check if service is available
    */
   isServiceAvailable(): boolean {
-    return !this.circuitBreakerOpen;
+    return !Array.from(this.circuitBreakers.values()).some(breaker => breaker.open);
   }
 
   /**
@@ -510,12 +695,24 @@ export class HRMClient {
   getServiceStatus(): {
     available: boolean;
     last_health_check: Date | null;
-    circuit_breaker_open: boolean;
+    circuit_breakers: { [endpoint: string]: { open: boolean; failures: number; last_failure: Date } };
+    cached_health_status: HealthCheckResponse | null;
   } {
+    const circuitBreakerStatus: { [endpoint: string]: { open: boolean; failures: number; last_failure: Date } } = {};
+    
+    this.circuitBreakers.forEach((breaker, endpoint) => {
+      circuitBreakerStatus[endpoint] = {
+        open: breaker.open,
+        failures: breaker.failures,
+        last_failure: breaker.lastFailure
+      };
+    });
+
     return {
-      available: !this.circuitBreakerOpen,
+      available: this.isServiceAvailable(),
       last_health_check: this.lastHealthCheck,
-      circuit_breaker_open: this.circuitBreakerOpen
+      circuit_breakers: circuitBreakerStatus,
+      cached_health_status: this.healthCheckCache.status
     };
   }
 }
