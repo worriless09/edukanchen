@@ -1,33 +1,70 @@
-import { Button } from '@/components/ui/button';
-import { Link, BookOpen } from "lucide-react";
+'use client'
 
-export default function Header() {
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Menu, X } from 'lucide-react'
+
+export function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <BookOpen className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold">Kanchen Academy</span>
-          </Link>
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <img 
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png" 
+              alt="Kanchen Academy Logo" 
+              className="w-36 h-14"
+            />
+          </div>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/courses" className="text-gray-600 hover:text-gray-900">Courses</Link>
-            <Link href="/flashcards" className="text-gray-600 hover:text-gray-900">Flashcards</Link>
-            <Link href="/quiz" className="text-gray-600 hover:text-gray-900">Quizzes</Link>
-            <Link href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <a href="#courses" className="hover:text-gray-900 font-normal text-sm font-sans text-black">Courses</a>
+            <a href="#features" className="hover:text-gray-900 font-normal text-sm font-sans text-black">Features</a>
+            <a href="#faculty" className="hover:text-gray-900 font-normal text-sm font-sans text-black">Faculty</a>
+            <a href="#contact" className="hover:text-gray-900 font-normal text-sm text-black font-sans">Contact</a>
+            <Button variant="outline" className="border-gray-300 hover:bg-gray-50 text-sm font-sans font-medium text-black">
+              Login
+            </Button>
+            <Button className="hover:bg-primary-500 text-white text-sm font-medium font-sans bg-primary-700">
+              Start Free Trial
+            </Button>
           </nav>
 
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/auth/login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/auth/register">Get Started</Link>
-            </Button>
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-700 hover:text-gray-900"
+            >
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200">
+            <div className="flex flex-col space-y-4">
+              <a href="#courses" className="text-gray-700 hover:text-gray-900 font-normal">Courses</a>
+              <a href="#features" className="text-gray-700 hover:text-gray-900 font-normal">Features</a>
+              <a href="#faculty" className="text-gray-700 hover:text-gray-900 font-normal">Faculty</a>
+              <a href="#contact" className="text-gray-700 hover:text-gray-900 font-normal">Contact</a>
+              <div className="flex flex-col space-y-2 pt-4">
+                <Button variant="outline" className="border-gray-300 text-gray-700">
+                  Login
+                </Button>
+                <Button className="bg-primary-400 hover:bg-primary-500 text-white">
+                  Start Free Trial
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
-  );
+  )
 }
