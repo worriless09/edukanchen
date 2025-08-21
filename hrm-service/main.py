@@ -14,6 +14,13 @@ from datetime import datetime, timedelta
 import numpy as np
 import os
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+import asyncio
+import openai  # or your AI service
+from pydantic import BaseModel
+from typing import List, Optional
+
 
 # Configure logging
 logging.basicConfig(
@@ -113,6 +120,24 @@ class QuizGenerationResponse(BaseModel):
     questions: List[Dict[str, Any]]
     quiz_metadata: Dict[str, Any]
 
+class FlashcardRequest(BaseModel):
+    topic: str
+    examType: str
+    difficulty: str
+    count: int = 10
+    language: str = "english"
+
+class CurrentAffairsRequest(BaseModel):
+    text: str
+    examType: str = "UPSC"
+    analysisType: str = "comprehensive"
+
+class InterviewQuestionRequest(BaseModel):
+    stage: str  # 'personality', 'daf', 'current-affairs'
+    questionNumber: int
+    userBackground: Optional[dict] = None
+    previousAnswers: Optional[List[dict]] = None
+    
 class HealthCheckResponse(BaseModel):
     status: str
     timestamp: str

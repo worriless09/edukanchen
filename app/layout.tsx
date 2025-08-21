@@ -1,22 +1,27 @@
-import type { Metadata } from 'next'
-import './globals.css'
 
-export const metadata: Metadata = {
-  title: 'Kanchen Academy',
-  description: 'Created with love',
-  generator: 'v0.dev',
-}
+// app/layout.tsx (Update existing layout)
+import { Footer } from '@/components/footer';
+import { LabsProvider } from '@/providers/LabsProvider';
+import { Navigation } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className="font-sans">
+    <html lang="en">
       <body className="bg-background text-foreground">
-        {children}
+        <LabsProvider>
+          <div className="min-h-screen">
+            <Navigation />
+            <main>{children}</main>
+            <Footer />
+          </div>
+          <Toaster position="top-right" />
+        </LabsProvider>
       </body>
     </html>
-  )
+  );
 }

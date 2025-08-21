@@ -36,9 +36,15 @@
 @layer base {
   :root {
     --border: 214.3 31.8% 91.4%;
+    --border-main: rgba(0, 0, 0, 0.1);
     --font-sans: 'Geist Sans', system-ui, sans-serif;
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+--background: #fcfcf9;
+  --foreground: #1a1a1a;
+  --offset: #f7f7f4;
+  --border-main: rgba(0, 0, 0, 0.1);
+  --super: #2563eb;
+  --muted: #6b7280;
+  --accent: #10b981;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -72,8 +78,13 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+--background: #100e12;
+  --foreground: #ffffff;
+  --offset: #1a1a1a;
+  --border-main: rgba(255, 255, 255, 0.1);
+  --super: #60a5fa;
+  --muted: #9ca3af;
+  --accent: #34d399;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
@@ -106,6 +117,11 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+.bg-offset { background: var(--offset); }
+.text-foreground { color: var(--foreground); }
+.border-main { border-color: var(--border-main); }
+.text-super { color: var(--super); }
 
 @layer base {
   * {
