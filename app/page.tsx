@@ -7,7 +7,6 @@ import { TestimonialsSection } from '@/components/testimonials-section'
 import { FinalCtaSection } from '@/components/final-cta-section'
 import { ContactSection } from '@/components/contact-section'
 import { Footer } from '@/components/footer'
-import { LabsCTA } from '@/components/LabsCTA';
 
 
 export default function HomePage() {
@@ -16,7 +15,6 @@ export default function HomePage() {
       <Header />
       <HeroSection />
       <FeaturesSection />
-       <LabsCTA />
       <CoursesSection />
       <FacultySection />
       <TestimonialsSection />

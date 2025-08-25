@@ -28,6 +28,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "app/api/labs/generate-flashcards"  ],
   "exclude": ["node_modules"]
 }

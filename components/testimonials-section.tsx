@@ -22,7 +22,15 @@ const testimonials = [
     image: '/placeholder.svg?height=80&width=80&text=Anjali',
     content: 'The personalized study plans and regular mock tests kept me on track throughout my preparation journey. Thank you Kanchen Academy!',
     rating: 5
-  }
+  },
+  {
+    name: 'Rahul Gupta',
+    exam: 'SSC CGL 2024',
+    rank: 'AIR 12',
+    image: '/testimonials/rahul.jpg',
+    quote: 'The AI-generated flashcards and mock interviews were game-changers. I could study efficiently even with my job.',
+    improvement: '+60% accuracy increase'
+  },
 ]
 
 export function TestimonialsSection() {
