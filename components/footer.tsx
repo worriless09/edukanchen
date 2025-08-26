@@ -54,7 +54,7 @@ export function Footer() {
               <input 
                 type="email" 
                 placeholder="Enter your email"
-                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="flex-1 py-2 bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 mx-0 text-left px-0 ml-0 mr-0 w-2"
               />
               <button className="px-4 py-2 bg-primary-400 hover:bg-primary-500 rounded-r-md">
                 <Mail className="h-4 w-4" />

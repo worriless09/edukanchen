@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { Star, Quote } from 'lucide-react'
 
 const testimonials = [
@@ -22,15 +21,7 @@ const testimonials = [
     image: '/placeholder.svg?height=80&width=80&text=Anjali',
     content: 'The personalized study plans and regular mock tests kept me on track throughout my preparation journey. Thank you Kanchen Academy!',
     rating: 5
-  },
-  {
-    name: 'Rahul Gupta',
-    exam: 'SSC CGL 2024',
-    rank: 'AIR 12',
-    image: '/testimonials/rahul.jpg',
-    quote: 'The AI-generated flashcards and mock interviews were game-changers. I could study efficiently even with my job.',
-    improvement: '+60% accuracy increase'
-  },
+  }
 ]
 
 export function TestimonialsSection() {
@@ -45,6 +36,7 @@ export function TestimonialsSection() {
             Hear from our successful students who achieved their dreams with Kanchen Academy.
           </p>
         </div>
+
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="bg-white rounded-xl p-6 shadow-lg">
@@ -53,22 +45,17 @@ export function TestimonialsSection() {
                   <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                 ))}
               </div>
-             
+              
               <Quote className="h-8 w-8 text-primary-300 mb-4" />
-             
-              <p className="text-gray-600 mb-6 italic">&quot;{testimonial.content}&quot;</p>
-             
+              
+              <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
+              
               <div className="flex items-center">
-                <div className="relative w-12 h-12 mr-4 flex-shrink-0">
-                  <Image
-                    src={testimonial.image || "/placeholder.svg"}
-                    alt={testimonial.name}
-                    width={48}
-                    height={48}
-                    className="rounded-full object-cover"
-                    priority={index === 0} // Prioritize first testimonial image
-                  />
-                </div>
+                <img 
+                  src={testimonial.image || "/placeholder.svg"}
+                  alt={testimonial.name}
+                  className="w-12 h-12 rounded-full mr-4 object-cover"
+                />
                 <div>
                   <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
                   <p className="text-sm text-primary-600">{testimonial.achievement}</p>

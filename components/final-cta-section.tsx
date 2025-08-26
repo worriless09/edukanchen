@@ -2,12 +2,12 @@ import { Button } from '@/components/ui/button'
 
 export function FinalCtaSection() {
   return (
-    <section className="bg-gray-50 py-20">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-normal text-gray-900 mb-6">
+    <section className="py-20 bg-primary-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-primary-100 py-1.5">
+        <h2 className="text-3xl lg:text-4xl text-gray-900 mb-6 font-semibold">
           Ready to Conquer Your Exam?
         </h2>
-        <p className="text-lg text-gray-700 mb-8 font-light leading-relaxed">
+        <p className="text-lg text-gray-700 mb-8 leading-relaxed font-normal">
           Join thousands of successful candidates who transformed their preparation with our AI-powered learning system.
         </p>
         

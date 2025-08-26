@@ -1,30 +1,33 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Phone, Mail, MapPin, Clock } from 'lucide-react'
+import type React from "react"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Phone, Mail, MapPin, Clock } from "lucide-react"
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    interest: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    interest: "",
+    inquiryType: "",
+    message: "",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle form submission
-    console.log('Form submitted:', formData)
+    console.log("Form submitted:", formData)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
   }
 
@@ -32,9 +35,7 @@ export function ContactSection() {
     <section id="contact" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Get In Touch
-          </h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Get In Touch</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Ready to start your journey? Contact us today for personalized guidance and course recommendations.
           </p>
@@ -47,25 +48,25 @@ export function ContactSection() {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-primary-400" />
+                  <Phone className="h-5 w-5 text-teal-500" />
                   <span className="text-gray-600">+91 98765 43210</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-primary-400" />
+                  <Mail className="h-5 w-5 text-teal-500" />
                   <span className="text-gray-600">info@kanchenacademy.com</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-primary-400" />
-                  <span className="text-gray-600">123 Education Street, New Delhi, India</span>
+                  <MapPin className="h-5 w-5 text-teal-500" />
+                  <span className="text-gray-600">123 Education Hub, New Delhi - 110001</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Clock className="h-5 w-5 text-primary-400" />
+                  <Clock className="h-5 w-5 text-teal-500" />
                   <span className="text-gray-600">Mon - Sat: 9:00 AM - 8:00 PM</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-primary-50 rounded-xl p-6">
+            <div className="bg-teal-50 rounded-xl p-6">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Why Choose Us?</h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Personalized learning paths</li>
@@ -97,37 +98,38 @@ export function ContactSection() {
                     placeholder="Enter your full name"
                   />
                 </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full"
-                    placeholder="Enter your phone number"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full"
+                      placeholder="Enter your email address"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number *
+                    </label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full"
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full"
-                  placeholder="Enter your email address"
-                />
               </div>
 
               <div>
@@ -140,7 +142,7 @@ export function ContactSection() {
                   required
                   value={formData.interest}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 >
                   <option value="">Select your area of interest</option>
                   <option value="UPSC CSE">UPSC Civil Services</option>
@@ -149,6 +151,25 @@ export function ContactSection() {
                   <option value="State PCS">State PCS</option>
                   <option value="Banking">Banking Exams</option>
                   <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="inquiryType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Inquiry Type *
+                </label>
+                <select
+                  id="inquiryType"
+                  name="inquiryType"
+                  required
+                  value={formData.inquiryType}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                >
+                  <option value="">Select your inquiry type</option>
+                  <option value="Course Inquiry">Course Inquiry</option>
+                  <option value="Admission Query">Admission Query</option>
+                  <option value="General Question">General Question</option>
                 </select>
               </div>
 
@@ -167,7 +188,7 @@ export function ContactSection() {
                 />
               </div>
 
-              <Button type="submit" className="w-full hover:bg-primary-500 text-white py-3 bg-primary-700">
+              <Button type="submit" className="w-full hover:bg-teal-600 text-white py-3 bg-teal-500">
                 Send Message
               </Button>
             </form>

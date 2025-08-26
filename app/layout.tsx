@@ -1,27 +1,31 @@
+import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import './globals.css'
 
-// app/layout.tsx (Update existing layout)
-import { Footer } from '@/components/footer';
-import { LabsProvider } from '@/providers/LabsProvider';
-import { Navigation } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+export const metadata: Metadata = {
+  title: 'Kanchen Academy',
+  description: 'Created with love',
+  generator: 'Kanchen',
+}
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
     <html lang="en">
-      <body className="bg-background text-foreground">
-        <LabsProvider>
-          <div className="min-h-screen">
-            <Navigation />
-            <main>{children}</main>
-            <Footer />
-          </div>
-          <Toaster position="top-right" />
-        </LabsProvider>
-      </body>
+      <head>
+        <style>{`
+html {
+  font-family: ${GeistSans.style.fontFamily};
+  --font-sans: ${GeistSans.variable};
+  --font-mono: ${GeistMono.variable};
+}
+        `}</style>
+      </head>
+      <body>{children}</body>
     </html>
-  );
+  )
 }
