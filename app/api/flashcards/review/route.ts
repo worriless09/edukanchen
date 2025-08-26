@@ -2,12 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { 
-  HRMSpacedRepetitionEngine, 
-  HRMFlashcardProgress, 
-  HRMReviewResponse 
-} from '@/lib/algorithms/hrm-spaced-repetition';
-import { hrmClient } from '@/lib/services/hrm-client';
+import { calculateNextReview } from '@/lib/algorithms/simple-spaced-repetition';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,15 +20,21 @@ export async function POST(request: NextRequest) {
       quality, 
       response_time, 
       confidence_level, 
-      hints_used, 
-      reasoning_steps,
-      context 
+      hints_used 
     } = body;
 
     // Validate input
-    if (!flashcard_id || quality === undefined || !response_time) {
+    if (!flashcard_id || quality === undefined) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate quality range (0-5)
+    if (quality < 0 || quality > 5) {
+      return NextResponse.json(
+        { error: 'Quality must be between 0 and 5' },
         { status: 400 }
       );
     }
@@ -54,54 +55,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create review response
-    const reviewResponse: HRMReviewResponse = {
+    // Calculate next review using simple spaced repetition
+    const reviewResult = calculateNextReview({
       quality,
-      response_time,
-      confidence_level: confidence_level || 0.5,
-      hints_used: hints_used || 0,
-      partial_correct: quality >= 2 && quality < 4,
-      reasoning_steps: reasoning_steps || [],
-      conceptual_understanding: Math.max(0, Math.min(1, (quality + (confidence_level || 0.5) * 5) / 10)),
-      problem_solving_approach: (reasoning_steps?.length || 0) > 2 ? 'analytical' : 'intuitive',
-      metacognitive_awareness: hints_used === 0 && (confidence_level || 0) > 0.7 ? 0.8 : 0.5
-    };
+      easeFactor: currentProgress?.ease_factor || 2.5,
+      interval: currentProgress?.interval_days || 1,
+      repetitions: currentProgress?.repetitions || 0
+    });
 
-    // Calculate next review using HRM
-    const reviewResult = await HRMSpacedRepetitionEngine.calculateHRMEnhancedReview(
-      user.id,
-      flashcard_id,
-      currentProgress as HRMFlashcardProgress,
-      reviewResponse,
-      {
-        subject: context?.subject || 'general',
-        topic: context?.topic || 'general',
-        difficulty_level: context?.difficulty_level || 0.5,
-        session_context: context?.session_context || {}
-      }
-    );
+    // Calculate success rate
+    const totalReviews = (currentProgress?.total_reviews || 0) + 1;
+    const successfulReviews = (currentProgress?.successful_reviews || 0) + (quality >= 3 ? 1 : 0);
+    const successRate = successfulReviews / totalReviews;
+
+    // Calculate average response time
+    const currentAvgTime = currentProgress?.average_response_time || 0;
+    const newAvgTime = currentAvgTime === 0 
+      ? response_time 
+      : (currentAvgTime * (totalReviews - 1) + response_time) / totalReviews;
 
     // Update progress in database
     const progressData = {
       user_id: user.id,
       flashcard_id,
-      ease_factor: reviewResult.updated_progress.ease_factor,
-      interval_days: reviewResult.updated_progress.interval_days,
-      repetitions: reviewResult.updated_progress.repetitions,
-      next_review_date: reviewResult.updated_progress.next_review_date.toISOString().split('T')[0],
+      ease_factor: reviewResult.easeFactor,
+      interval_days: reviewResult.interval,
+      repetitions: reviewResult.repetitions,
+      next_review_date: reviewResult.nextReviewDate.toISOString().split('T')[0],
       last_reviewed_at: new Date().toISOString(),
-      quality_responses: reviewResult.updated_progress.quality_responses,
-      total_reviews: reviewResult.updated_progress.total_reviews,
-      success_rate: reviewResult.updated_progress.success_rate,
-      average_response_time: reviewResult.updated_progress.average_response_time,
-      difficulty_trend: reviewResult.updated_progress.difficulty_trend,
-      reasoning_score: reviewResult.hrm_analysis.reasoning_depth,
-      adaptive_difficulty: reviewResult.hrm_analysis.recommended_difficulty,
-      learning_trajectory: reviewResult.hrm_analysis.learning_insights,
-      cognitive_load_history: [
-        ...(currentProgress?.cognitive_load_history || []).slice(-19),
-        reviewResult.hrm_analysis.cognitive_load
-      ]
+      total_reviews: totalReviews,
+      successful_reviews: successfulReviews,
+      success_rate: successRate,
+      average_response_time: Math.round(newAvgTime),
+      last_quality: quality,
+      confidence_level: confidence_level || 0.5,
+      hints_used: hints_used || 0
     };
 
     const { error: updateError } = await supabase
@@ -118,30 +106,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store reasoning session
-    const sessionData = {
-      user_id: user.id,
-      session_type: 'flashcard',
-      content_id: flashcard_id,
-      reasoning_depth: reviewResult.hrm_analysis.reasoning_depth,
-      pattern_recognition: reviewResult.hrm_analysis.pattern_recognition,
-      cognitive_strengths: reviewResult.hrm_analysis.learning_insights.reasoning_strengths,
-      improvement_areas: reviewResult.hrm_analysis.learning_insights.improvement_areas,
-      recommended_difficulty: reviewResult.hrm_analysis.recommended_difficulty,
-      duration_seconds: Math.round(response_time / 1000),
-      confidence_level: confidence_level || 0.5
-    };
-
-    await supabase.from('reasoning_sessions').insert(sessionData);
+    // Generate performance feedback
+    const feedback = generatePerformanceFeedback(quality, successRate, reviewResult.interval);
 
     return NextResponse.json({
       success: true,
-      next_review_date: reviewResult.next_review_date,
-      interval_days: reviewResult.interval_days,
-      performance_feedback: reviewResult.performance_feedback,
-      study_analytics: reviewResult.study_analytics,
-      adaptive_recommendations: reviewResult.adaptive_recommendations,
-      learning_insights: reviewResult.learning_insights
+      next_review_date: reviewResult.nextReviewDate,
+      interval_days: reviewResult.interval,
+      ease_factor: reviewResult.easeFactor,
+      repetitions: reviewResult.repetitions,
+      success_rate: successRate,
+      performance_feedback: feedback,
+      study_analytics: {
+        total_reviews: totalReviews,
+        successful_reviews: successfulReviews,
+        average_response_time: Math.round(newAvgTime),
+        difficulty_trend: getDifficultyTrend(quality, currentProgress?.last_quality)
+      }
     });
 
   } catch (error) {
@@ -176,8 +157,6 @@ export async function GET(request: NextRequest) {
           front_text,
           back_text,
           difficulty,
-          reasoning_type,
-          cognitive_load,
           tags,
           flashcard_decks (
             id,
@@ -205,13 +184,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Process with HRM prioritization
+    // Process with simple prioritization
     const prioritizedCards = data?.map(progress => {
-      const priorityScore = calculatePriorityScore(progress);
+      const priorityScore = calculateSimplePriorityScore(progress);
       return {
         ...progress,
         priority_score: priorityScore,
-        priority_reason: getPriorityReason(progress)
+        priority_reason: getSimplePriorityReason(progress)
       };
     }).sort((a, b) => b.priority_score - a.priority_score);
 
@@ -230,7 +209,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculatePriorityScore(progress: any): number {
+function calculateSimplePriorityScore(progress: any): number {
   let score = 0;
 
   const daysOverdue = Math.max(0, 
@@ -238,20 +217,50 @@ function calculatePriorityScore(progress: any): number {
   );
   score += Math.min(50, daysOverdue * 10);
 
+  // Priority based on success rate
   if (progress.success_rate < 0.5) score += 30;
-  if (progress.reasoning_score < 0.5) score += 25;
-  if (progress.difficulty_trend === 'declining') score += 20;
+  if (progress.success_rate < 0.3) score += 20;
+
+  // Priority based on ease factor (lower = harder = higher priority)
+  if (progress.ease_factor < 2.0) score += 25;
+  if (progress.ease_factor < 1.5) score += 15;
+
+  // New cards or cards with few reviews get priority
+  if (!progress.total_reviews || progress.total_reviews < 3) score += 20;
 
   return Math.round(score);
 }
 
-function getPriorityReason(progress: any): string {
+function getSimplePriorityReason(progress: any): string {
   const daysOverdue = Math.max(0, 
     (Date.now() - new Date(progress.next_review_date).getTime()) / (1000 * 60 * 60 * 24)
   );
 
   if (daysOverdue > 2) return `${Math.ceil(daysOverdue)} days overdue`;
+  if (progress.success_rate < 0.3) return "Very low success rate";
   if (progress.success_rate < 0.5) return "Low success rate";
-  if (progress.reasoning_score < 0.5) return "Weak reasoning";
+  if (progress.ease_factor < 1.5) return "Very difficult card";
+  if (progress.ease_factor < 2.0) return "Difficult card";
+  if (!progress.total_reviews || progress.total_reviews < 3) return "New card";
   return "Regular review due";
+}
+
+function generatePerformanceFeedback(quality: number, successRate: number, interval: number): string {
+  if (quality >= 4) {
+    return "Excellent! Your understanding is strong. Keep up the great work!";
+  } else if (quality === 3) {
+    return "Good job! You're on the right track. A bit more practice will solidify this knowledge.";
+  } else if (quality === 2) {
+    return "You're getting there! This concept needs more attention. Don't worry, it's part of the learning process.";
+  } else {
+    return "This is a challenging concept for you. Consider reviewing the fundamentals or seeking additional resources.";
+  }
+}
+
+function getDifficultyTrend(currentQuality: number, lastQuality?: number): 'improving' | 'stable' | 'declining' {
+  if (!lastQuality) return 'stable';
+  
+  if (currentQuality > lastQuality) return 'improving';
+  if (currentQuality < lastQuality) return 'declining';
+  return 'stable';
 }
