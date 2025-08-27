@@ -5,7 +5,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Kanchen Academy',
-  description: 'Created with love',
+  description: 'Comprehensive online learning platform with video courses, quizzes, and smart AI tools to boost exam success',
   generator: 'Kanchen',
 }
 
@@ -17,6 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script 
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          async
+        />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};

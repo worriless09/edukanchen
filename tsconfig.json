@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+     "typeRoots": ["./node_modules/@types", "./lib/types"],
     "target": "es5",
     "lib": ["dom", "dom.iterable", "es6"],
     "allowJs": true,
@@ -22,6 +23,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/PricingSection.js", "components/VideoPlayer.js", "./lib/types/**/*"],
   "exclude": ["node_modules"]
 }
