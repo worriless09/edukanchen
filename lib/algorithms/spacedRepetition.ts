@@ -5,6 +5,13 @@
  * Based on the original SuperMemo-2 algorithm with enhancements for educational use
  */
 
+export interface FlashcardData {
+  ease_factor: number;
+  interval_days: number;
+  review_count: number;
+  next_review_date: string;
+}
+
 export interface FlashcardProgress {
   flashcard_id: string;
   user_id: string;
@@ -29,6 +36,7 @@ export interface ReviewResponse {
 }
 
 export interface ReviewResult {
+  quality: number; // 0-5 (0=complete blackout, 5=perfect response)
   updated_progress: FlashcardProgress;
   next_review_date: Date;
   interval_days: number;
@@ -42,6 +50,74 @@ export interface ReviewResult {
     retention_rate: number;
     mastery_level: number;
     estimated_memory_strength: number;
+  };
+}
+
+// Hermann Ebbinghaus Spaced Repetition Algorithm (SM-2)
+export function calculateNextReview(
+  card: FlashcardData,
+  quality: number
+): Partial<FlashcardData> {
+  let { ease_factor, interval_days, review_count } = card;
+  
+  // Increment review count
+  review_count += 1;
+  
+  if (quality >= 3) {
+    // Correct response
+    if (review_count === 1) {
+      interval_days = 1;
+    } else if (review_count === 2) {
+      interval_days = 6;
+    } else {
+      interval_days = Math.round(interval_days * ease_factor);
+    }
+  } else {
+    // Incorrect response - restart the learning process
+    review_count = 0;
+    interval_days = 1;
+  }
+  
+  // Adjust ease factor
+  ease_factor = ease_factor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  
+  // Minimum ease factor of 1.3
+  if (ease_factor < 1.3) {
+    ease_factor = 1.3;
+  }
+  
+  // Calculate next review date
+  const nextReviewDate = new Date();
+  nextReviewDate.setDate(nextReviewDate.getDate() + interval_days);
+  
+  return {
+    ease_factor: Math.round(ease_factor * 100) / 100,
+    interval_days,
+    review_count,
+    next_review_date: nextReviewDate.toISOString(),
+  };
+}
+
+export function getDueCards(cards: FlashcardData[]): FlashcardData[] {
+  const now = new Date();
+  return cards.filter(card => new Date(card.next_review_date) <= now);
+}
+
+export function getStudyStats(cards: FlashcardData[]) {
+  const now = new Date();
+  const dueCards = cards.filter(card => new Date(card.next_review_date) <= now);
+  const newCards = cards.filter(card => card.review_count === 0);
+  const learningCards = cards.filter(card => 
+    card.review_count > 0 && card.review_count < 3
+  );
+  const matureCards = cards.filter(card => card.review_count >= 3);
+  
+  return {
+    total: cards.length,
+    due: dueCards.length,
+    new: newCards.length,
+    learning: learningCards.length,
+    mature: matureCards.length,
   };
 }
 
@@ -87,6 +163,7 @@ export class SpacedRepetitionEngine {
     const study_analytics = this.calculateStudyAnalytics(updatedProgress);
 
     return {
+      quality: Number(adjustedQuality.toFixed(2)),
       updated_progress: updatedProgress,
       next_review_date,
       interval_days,
@@ -173,12 +250,20 @@ export class SpacedRepetitionEngine {
     // Update total reviews
     updatedProgress.total_reviews += 1;
 
+    // Update repetitions (increment on successful recall, reset on failure)
+    if (adjustedQuality >= 3) {
+      updatedProgress.repetitions = (progress.repetitions || 0) + 1;
+    } else {
+      updatedProgress.repetitions = 0;
+    }
+
     // Update success rate
     const successfulReviews = updatedProgress.quality_responses.filter(q => q >= 3).length;
     updatedProgress.success_rate = successfulReviews / updatedProgress.quality_responses.length;
 
     // Update average response time
-    const totalTime = progress.average_response_time * (progress.total_reviews - 1) + response.response_time;
+    const prevTotalReviews = progress.total_reviews || 0;
+    const totalTime = (progress.average_response_time * prevTotalReviews) + response.response_time;
     updatedProgress.average_response_time = totalTime / updatedProgress.total_reviews;
 
     // Update difficulty trend

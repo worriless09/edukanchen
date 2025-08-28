@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RazorpayOptions, RazorpayPaymentResponse, OrderResponse, PaymentVerificationRequest } from '@/lib/types/razorpay';
+import { RazorpayOptions, RazorpayPaymentResponse, OrderResponse, PaymentVerificationRequest } from '@/types/razorpay';
 
 // Component type definitions
 interface Plan {

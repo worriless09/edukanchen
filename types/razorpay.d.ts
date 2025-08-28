@@ -40,9 +40,34 @@ export interface RazorpayInstance {
 // Global Window Interface Extension
 declare global {
   interface Window {
-    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+    Razorpay: {
+      new (options: {
+        key: string;
+        amount: number;
+        currency: string;
+        name: string;
+        description: string;
+        order_id: string;
+        handler: (response: any) => void;
+        prefill?: {
+          name?: string;
+          email?: string;
+          contact?: string;
+        };
+        theme?: {
+          color?: string;
+        };
+        modal?: {
+          ondismiss?: () => void;
+        };
+      }): {
+        open: () => void;
+        on: (event: string, handler: (response: any) => void) => void;
+      };
+    };
   }
 }
+
 
 // Order Creation Response
 export interface OrderResponse {

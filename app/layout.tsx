@@ -2,18 +2,22 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import './globals.css'
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+
+ const inter = Inter({ subsets: ['latin'] }); 
 
 export const metadata: Metadata = {
-  title: 'Kanchen Academy',
-  description: 'Comprehensive online learning platform with video courses, quizzes, and smart AI tools to boost exam success',
+  title: 'Kanchen Academy - Transform Your Dreams into Civil Service Success',
+  description: 'Join India\'s most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations.',
   generator: 'Kanchen',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
       <head>
@@ -29,7 +33,12 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
+    
   )
 }
