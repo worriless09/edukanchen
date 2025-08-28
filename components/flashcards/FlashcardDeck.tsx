@@ -13,6 +13,40 @@ import { RotateCcw, Eye, EyeOff, Plus, BookOpen } from 'lucide-react';
 import FlashcardCreator from './FlashcardCreator';
 import { Badge } from '@/components/ui/badge';
 
+// Raw DB row shape (adjust fields if actual table differs)
+type DbFlashcard = {
+  id: string;
+  user_id: string;
+  subject: string | null;
+  category: string | null;
+  question: string | null;
+  answer: string | null;
+  ease: number | null;
+  interval: number | null;
+  repetitions: number | null;
+  next_review_date: Date| null; // ISO string from Supabase
+  created_at: Date | null;
+  updated_at: Date | null;
+};
+
+// Map DB row -> app Flashcard type the algorithms/components expect
+function mapDbToFlashcard(row: DbFlashcard): Flashcard {
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    subject: row.subject ?? '',
+    category: row.category ?? undefined, // or '' if preferred
+    question: row.question ?? '',
+    answer: row.answer ?? '',
+    ease: typeof row.ease === 'number' ? row.ease : 2.5,
+    interval: typeof row.interval === 'number' ? row.interval : 0,
+    repetitions: typeof row.repetitions === 'number' ? row.repetitions : 0,
+    next_review_date: row.next_review_date ? new Date(row.next_review_date) : new Date(),
+    created_at: row.created_at ? new Date(row.created_at) : new Date(),
+    updated_at: row.updated_at ? new Date(row.updated_at) : new Date(),
+  };
+}
+
 interface FlashcardDeckProps {
   subject?: string;
   category?: string;
@@ -27,19 +61,32 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
   const [showCreator, setShowCreator] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const { user } = useAuth();
   const supabase = createClient();
 
   useEffect(() => {
     if (user) {
       fetchFlashcards();
+    } else {
+      // Reset local state if user logs out
+      setFlashcards([]);
+      setSessionCards([]);
+      setCurrentCard(null);
+      setCurrentIndex(0);
+      setShowAnswer(false);
+      setSessionStats({ correct: 0, total: 0 });
+      setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, subject, category]);
 
   const fetchFlashcards = async () => {
     if (!user) return;
 
     try {
+      setLoading(true);
+
       let query = supabase
         .from('flashcards')
         .select('*')
@@ -56,19 +103,25 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       const { data, error } = await query;
       if (error) throw error;
 
-      const cards = data || [];
+      // Map DB rows to app type
+      const cards: Flashcard[] = (data ?? []).map((row: DbFlashcard) => mapDbToFlashcard(row));
+
+      // Fix: set Flashcard[] state
       setFlashcards(cards);
-      
-      // Get due cards for current session
+
+      // Fix: pass Flashcard[] to algorithms
       const dueCards = getDueCards(cards);
       setSessionCards(dueCards);
-      
+
       if (dueCards.length > 0) {
         setCurrentCard(dueCards[0]);
         setCurrentIndex(0);
+      } else {
+        setCurrentCard(null);
+        setCurrentIndex(0);
       }
-    } catch (error) {
-      console.error('Error fetching flashcards:', error);
+    } catch (err) {
+      console.error('Error fetching flashcards:', err);
     } finally {
       setLoading(false);
     }
@@ -80,7 +133,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
     try {
       // Calculate next review using spaced repetition algorithm
       const updatedData = calculateNextReview(currentCard, quality);
-      
+
       // Update in database
       const { error } = await supabase
         .from('flashcards')
@@ -90,7 +143,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       if (error) throw error;
 
       // Update session stats
-      setSessionStats(prev => ({
+      setSessionStats((prev) => ({
         correct: prev.correct + (quality >= 3 ? 1 : 0),
         total: prev.total + 1,
       }));
@@ -106,8 +159,8 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
         setCurrentCard(null);
         setShowAnswer(false);
       }
-    } catch (error) {
-      console.error('Error updating flashcard:', error);
+    } catch (err) {
+      console.error('Error updating flashcard:', err);
     }
   };
 
@@ -149,28 +202,28 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
               <div className="text-sm text-gray-600">Total Cards</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-red-600">{stats.due}</div>
               <div className="text-sm text-gray-600">Due</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-600">{stats.new}</div>
               <div className="text-sm text-gray-600">New</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-orange-600">{stats.learning}</div>
               <div className="text-sm text-gray-600">Learning</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-purple-600">{stats.mature}</div>
@@ -186,7 +239,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold">Session Complete! 🎉</h2>
                 <div className="text-lg">
-                  You got {sessionStats.correct} out of {sessionStats.total} cards correct
+                  {`Got ${sessionStats.correct} out of ${sessionStats.total} correct `}
                   ({Math.round((sessionStats.correct / sessionStats.total) * 100)}%)
                 </div>
                 <Button onClick={resetSession} className="mt-4">
@@ -198,9 +251,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
               <div className="space-y-4">
                 <BookOpen className="h-16 w-16 mx-auto text-blue-500" />
                 <h2 className="text-2xl font-bold">Ready to Study!</h2>
-                <p className="text-gray-600">
-                  You have {stats.due} cards due for review
-                </p>
+                <p className="text-gray-600">There are {stats.due} cards due for review</p>
                 <Button onClick={resetSession} size="lg">
                   Start Studying
                 </Button>
@@ -209,9 +260,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
               <div className="space-y-4">
                 <BookOpen className="h-16 w-16 mx-auto text-gray-400" />
                 <h2 className="text-2xl font-bold">All Caught Up!</h2>
-                <p className="text-gray-600">
-                  No cards due for review. Great job! 🌟
-                </p>
+                <p className="text-gray-600">No cards due for review. Great job! 🌟</p>
                 <Button onClick={() => setShowCreator(true)} variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
                   Add New Cards
@@ -229,8 +278,12 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>Progress: {currentIndex + 1} / {sessionCards.length}</span>
-          <span>Session: {sessionStats.correct}/{sessionStats.total}</span>
+          <span>
+            Progress: {currentIndex + 1} / {sessionCards.length}
+          </span>
+          <span>
+            Session: {sessionStats.correct}/{sessionStats.total}
+          </span>
         </div>
         <Progress value={progress} />
       </div>
@@ -241,28 +294,21 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
           <div className="flex flex-col items-center justify-center h-full space-y-6">
             {/* Subject Badge */}
             <Badge variant="secondary">{currentCard.subject}</Badge>
-            
+
             {/* Question */}
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-4">Question:</h2>
               <p className="text-lg leading-relaxed">{currentCard.question}</p>
             </div>
-            
+
             {/* Answer Section */}
             {showAnswer ? (
               <div className="text-center border-t pt-6 w-full">
                 <h3 className="text-lg font-semibold mb-3">Answer:</h3>
-                <p className="text-base leading-relaxed text-gray-700">
-                  {currentCard.answer}
-                </p>
+                <p className="text-base leading-relaxed text-gray-700">{currentCard.answer}</p>
               </div>
             ) : (
-              <Button
-                onClick={() => setShowAnswer(true)}
-                variant="outline"
-                size="lg"
-                className="mt-8"
-              >
+              <Button onClick={() => setShowAnswer(true)} variant="outline" size="lg" className="mt-8">
                 <Eye className="h-4 w-4 mr-2" />
                 Show Answer
               </Button>
@@ -274,15 +320,11 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       {/* Review Buttons */}
       {showAnswer && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <Button
-            onClick={() => handleReview(0)}
-            variant="destructive"
-            className="p-4 h-auto flex-col"
-          >
+          <Button onClick={() => handleReview(0)} variant="destructive" className="p-4 h-auto flex-col">
             <span className="font-bold">Again</span>
             <span className="text-xs">Complete blackout</span>
           </Button>
-          
+
           <Button
             onClick={() => handleReview(2)}
             variant="outline"
@@ -291,7 +333,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
             <span className="font-bold">Hard</span>
             <span className="text-xs">Incorrect but remembered</span>
           </Button>
-          
+
           <Button
             onClick={() => handleReview(4)}
             variant="outline"
@@ -300,11 +342,8 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
             <span className="font-bold">Good</span>
             <span className="text-xs">Correct with effort</span>
           </Button>
-          
-          <Button
-            onClick={() => handleReview(5)}
-            className="p-4 h-auto flex-col bg-green-600 hover:bg-green-700"
-          >
+
+          <Button onClick={() => handleReview(5)} className="p-4 h-auto flex-col bg-green-600 hover:bg-green-700">
             <span className="font-bold">Easy</span>
             <span className="text-xs">Perfect recall</span>
           </Button>
@@ -317,7 +356,7 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
           <Plus className="h-4 w-4 mr-2" />
           Add Card
         </Button>
-        
+
         {showAnswer && (
           <Button variant="ghost" onClick={() => setShowAnswer(false)}>
             <EyeOff className="h-4 w-4 mr-2" />

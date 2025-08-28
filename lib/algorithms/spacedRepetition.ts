@@ -4,6 +4,8 @@
  * Hermann Ebbinghaus Spaced Repetition Implementation (SM-2 Algorithm)
  * Based on the original SuperMemo-2 algorithm with enhancements for educational use
  */
+import { Flashcard } from '@/types/flashcard';
+
 
 export interface FlashcardData {
   ease_factor: number;
@@ -54,10 +56,7 @@ export interface ReviewResult {
 }
 
 // Hermann Ebbinghaus Spaced Repetition Algorithm (SM-2)
-export function calculateNextReview(
-  card: FlashcardData,
-  quality: number
-): Partial<FlashcardData> {
+export function calculateNextReview(card: Flashcard, quality: number): Partial<Flashcard> {
   let { ease_factor, interval_days, review_count } = card;
   
   // Increment review count
