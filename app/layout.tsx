@@ -2,20 +2,22 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Inter } from 'next/font/google'
-import Link from 'next/link'
+import { Inter } from "next/font/google"
+import Link from "next/link"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+import Image from "next/image"
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
     default: "Kanchen Academy - Transform Your Dreams into Civil Service Success",
-    template: "%s | Kanchen Academy"
+    template: "%s | Kanchen Academy",
   },
-  description: "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations. Expert faculty, comprehensive courses, and proven success record.",
+  description:
+    "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations. Expert faculty, comprehensive courses, and proven success record.",
   keywords: [
     "UPSC preparation",
     "civil services coaching",
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
     "AI-powered learning",
     "mock tests",
     "current affairs",
-    "Kanchen Academy"
+    "Kanchen Academy",
   ],
   authors: [{ name: "Kanchen Academy" }],
   creator: "Kanchen Academy",
@@ -39,8 +41,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "/",
-    title: "Kanchen Academy - Transform Your Dreams into Civil Service Success",
-    description: "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations.",
+    title:
+      "Kanchen Academy - Transform Your Dreams into Civil Service Success",
+    description:
+      "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations.",
     siteName: "Kanchen Academy",
     images: [
       {
@@ -53,8 +57,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kanchen Academy - Transform Your Dreams into Civil Service Success",
-    description: "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations.",
+    title:
+      "Kanchen Academy - Transform Your Dreams into Civil Service Success",
+    description:
+      "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations.",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -73,14 +79,18 @@ export default function RootLayout({
       <head>
         {/* Favicons */}
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        
+
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#000000" />
-        
+
         {/* Viewport meta tag for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
@@ -88,32 +98,36 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-              <nav className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="flex justify-between h-16">
-                    <div className="flex items-center">
-                      <Link href="/" className="text-2xl font-bold text-blue-600">
-                        Kanchen Academy
-                      </Link>
-                    </div>
-                    <div className="flex items-center space-x-8">
-                      <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
-                        Home
-                      </Link>
-                      <Link href="/ai-analyzer" className="text-gray-700 hover:text-blue-600 transition-colors">
-                        AI Analyzer
-                      </Link>
-                      <Link href="/flashcards" className="text-gray-700 hover:text-blue-600 transition-colors">
-                        Practice
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </nav>
-              
-              <main>
-                {children}
-              </main>
+<nav className="bg-white shadow-sm border-b border-gray-200">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between h-16">
+      <div className="flex items-center">
+        <Link href="/" className="flex items-center space-x-2">
+          <Image
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
+            alt="Kanchen Academy Logo"
+            width={120}
+            height={120}
+            priority
+          />
+        </Link>
+      </div>
+      <div className="flex items-center space-x-8">
+        <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+          Home
+        </Link>
+        <Link href="/ai-analyzer" className="text-gray-700 hover:text-blue-600 transition-colors">
+          AI Analyzer
+        </Link>
+        <Link href="/flashcards" className="text-gray-700 hover:text-blue-600 transition-colors">
+          Flashcards
+        </Link>
+      </div>
+    </div>
+  </div>
+</nav>
+
+              <main>{children}</main>
             </div>
           </AuthProvider>
         </ErrorBoundary>
