@@ -1,11 +1,14 @@
-
 import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
+import { Inter } from 'next/font/google'
+import Link from 'next/link'
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
   description: "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations. Expert faculty, comprehensive courses, and proven success record.",
   keywords: [
     "UPSC preparation",
-    "civil services coaching", 
+    "civil services coaching",
     "IAS coaching",
     "SSC preparation",
     "state PCS coaching",
@@ -66,32 +69,52 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
         {/* Favicons */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
         
         {/* Theme color for mobile browsers */}
-        <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" content="#000000" />
         
         {/* Viewport meta tag for responsive design */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      
-      <body>
+      <body className={`${inter.className} antialiased`}>
         <ErrorBoundary>
           <AuthProvider>
-            {children}
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+              <nav className="bg-white shadow-sm border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between h-16">
+                    <div className="flex items-center">
+                      <Link href="/" className="text-2xl font-bold text-blue-600">
+                        Kanchen Academy
+                      </Link>
+                    </div>
+                    <div className="flex items-center space-x-8">
+                      <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
+                        Home
+                      </Link>
+                      <Link href="/ai-analyzer" className="text-gray-700 hover:text-blue-600 transition-colors">
+                        AI Analyzer
+                      </Link>
+                      <Link href="/flashcards" className="text-gray-700 hover:text-blue-600 transition-colors">
+                        Practice
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+              
+              <main>
+                {children}
+              </main>
+            </div>
           </AuthProvider>
         </ErrorBoundary>
       </body>
