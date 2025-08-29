@@ -1,59 +1,69 @@
+//# Updated Features Section (With Your Requested Icons)
+
+
+import { Card, CardContent } from "@/components/ui/card"
+
 const features = [
   {
-    icon: "🤖",
+    icon: "🧠", // Your requested icon
     title: "AI-Powered Learning",
-    description:
-      "Smart algorithms adapt to your learning style and optimize your study schedule for maximum retention.",
+    description: "Personalized study paths with adaptive algorithms that adjust to your learning pace and style.",
   },
   {
-    icon: "🧠",
+    icon: "📚", // Your requested icon  
     title: "Spaced Repetition System",
     description: "AI-optimized review schedules ensure maximum retention and long-term memory consolidation.",
   },
   {
-    icon: "📚",
-    title: "Previous Year Questions",
-    description: "Practice with a vast collection of previous year questions to understand exam patterns.",
+    icon: "👨🏫", // Your requested icon
+    title: "Expert Faculty", 
+    description: "Learn from experienced educators and successful civil servants with proven track records.",
   },
   {
-    icon: "👨‍🏫",
-    title: "Expert Faculty",
-    description: "Learn from IAS officers and top-ranked professionals with proven track records.",
-  },
-  {
-    icon: "🎥",
+    icon: "🎥", // Your requested icon
     title: "Live Classes",
     description: "Attend live classes conducted by experts to clarify doubts and gain real-time insights.",
   },
   {
-    icon: "📝",
+    icon: "📝", // Your requested icon
     title: "Mock Test Series",
     description: "Take part in comprehensive mock test series to assess your preparation level.",
+  },
+  {
+    icon: "🏆",
+    title: "Proven Results",
+    description: "95% success rate with over 1000+ students achieving their civil service dreams.",
   },
 ]
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 border-0 py-2.5 lg:px-8 rounded-sm border-none border-white text-white bg-white">
-        <div className="text-center mb-2">
-          <h2 className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-primary-700 text-3xl font-medium">Why Choose Kanchen Academy?</h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto font-normal">
-            Experience the future of competitive exam preparation with our AI-powered platform designed specifically for
-            UPSC, SSC, and State PCS aspirants.
+    <section className="py-24 bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Why Choose Kanchen Academy?
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Experience the perfect blend of traditional teaching excellence and cutting-edge AI technology.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 my-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className="rounded-2xl p-10 border text-center hover:shadow-2xl hover:border-primary-500 transition-all duration-300 bg-primary-50"
-            >
-              <div className="text-4xl mb-6">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
-              <p className="text-gray-600 font-normal leading-relaxed">{feature.description}</p>
-            </div>
+            <Card key={index} className="group hover-lift bg-white border-0 shadow-sm hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>

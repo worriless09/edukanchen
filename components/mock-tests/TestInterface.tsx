@@ -1,10 +1,7 @@
-// 9. MOCK TEST SYSTEM
-// ========================================
-
 // components/mock-tests/TestInterface.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { MockTest, TestQuestion, TestAttempt } from '@/types/test';
@@ -13,16 +10,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Clock, AlertCircle, CheckCircle, Send } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface TestInterfaceProps {
   testId: string;
   onTestComplete: (attempt: TestAttempt) => void;
+  onExit?: () => void;
 }
 
-export default function TestInterface({ testId, onTestComplete }: TestInterfaceProps) {
+export default function TestInterface({ testId, onTestComplete, onExit }: TestInterfaceProps) {
   const [test, setTest] = useState<MockTest | null>(null);
   const [questions, setQuestions] = useState<TestQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -30,20 +29,30 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [warningShown, setWarningShown] = useState(false);
+
   const { user, hasAccess } = useAuth();
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const supabase = createClient();
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  // Fetch test data
   useEffect(() => {
     fetchTestData();
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
   }, [testId]);
 
+  // Timer effect
   useEffect(() => {
-    if (timeRemaining > 0 && test) {
+    if (timeRemaining > 0 && test && !isSubmitting) {
       timerRef.current = setTimeout(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
@@ -63,12 +72,16 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
     }
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
     };
-  }, [timeRemaining, test, warningShown]);
+  }, [timeRemaining, test, warningShown, isSubmitting]);
 
   const fetchTestData = async () => {
     try {
+      setLoading(true);
+
       // Fetch test details
       const { data: testData, error: testError } = await supabase
         .from('mock_tests')
@@ -77,11 +90,20 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
         .single();
 
       if (testError) throw testError;
+      
+      if (!testData) {
+        throw new Error('Test not found');
+      }
+
       setTest(testData);
 
-      // Check access
+      // Check user access
+      if (!user) {
+        throw new Error('Please log in to access this test');
+      }
+
       if (!hasAccess(testData.tier)) {
-        throw new Error('Premium subscription required');
+        throw new Error('Premium subscription required for this test');
       }
 
       // Fetch questions
@@ -92,40 +114,50 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
         .order('order_index', { ascending: true });
 
       if (questionsError) throw questionsError;
-      setQuestions(questionsData || []);
+      
+      const validQuestions = questionsData?.filter(q => q.question && q.options) || [];
+      setQuestions(validQuestions);
 
       // Start timer
-      setTimeRemaining(testData.time_limit * 60); // Convert minutes to seconds
+      if (testData.time_limit && testData.time_limit > 0) {
+        setTimeRemaining(testData.time_limit * 60); // Convert minutes to seconds
+      }
     } catch (error) {
       console.error('Error fetching test data:', error);
+      // Handle error appropriately - could show error message to user
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAnswerSelect = (questionId: string, selectedAnswer: string) => {
+  const handleAnswerSelect = useCallback((questionId: string, selectedAnswer: string) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: selectedAnswer
     }));
-  };
+  }, []);
 
-  const calculateScore = () => {
+  const calculateScore = useCallback(() => {
     let score = 0;
     let totalMarks = 0;
 
     questions.forEach(question => {
-      totalMarks += question.marks;
+      totalMarks += question.marks || 1;
       if (answers[question.id] === question.correct_answer) {
-        score += question.marks;
+        score += question.marks || 1;
       }
     });
 
     return { score, totalMarks };
-  };
+  }, [questions, answers]);
 
   const handleSubmit = async (autoSubmit = false) => {
     if (!user || !test || isSubmitting) return;
+
+    // Clear timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
 
     setIsSubmitting(true);
 
@@ -142,6 +174,7 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
         total_marks: totalMarks,
         time_taken: timeTaken,
         percentage: Math.round(percentage * 100) / 100,
+        completed_at: new Date().toISOString(),
       };
 
       const { data: attempt, error } = await supabase
@@ -178,20 +211,113 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
     return 'text-green-600';
   };
 
+  const navigateToQuestion = (index: number) => {
+    if (index >= 0 && index < questions.length) {
+      setCurrentQuestionIndex(index);
+    }
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    }
+  };
+
+  const previousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  };
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading test...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2">Loading test...</span>
+      </div>
+    );
   }
 
-  if (!test || !hasAccess(test.tier)) {
+  // Check if user is not logged in
+  if (!user) {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="p-6 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+          <h3 className="text-lg font-semibold mb-2">Login Required</h3>
+          <p className="text-gray-600 mb-4">
+            Please log in to access this test.
+          </p>
+          <div className="space-x-2">
+            {onExit && (
+              <Button variant="outline" onClick={onExit}>
+                Go Back
+              </Button>
+            )}
+            <Button>Log In</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Check if test data is not available
+  if (!test) {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Test Not Found</h3>
+          <p className="text-gray-600 mb-4">
+            The requested test could not be found or loaded.
+          </p>
+          {onExit && (
+            <Button variant="outline" onClick={onExit}>
+              Go Back
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Check if user has access to the test tier
+  if (!hasAccess(test.tier)) {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Premium Required</h3>
           <p className="text-gray-600 mb-4">
             This test requires a premium subscription.
           </p>
-          <Button>Upgrade to Premium</Button>
+          <div className="space-x-2">
+            {onExit && (
+              <Button variant="outline" onClick={onExit}>
+                Go Back
+              </Button>
+            )}
+            <Button>Upgrade to Premium</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Questions Found</h3>
+          <p className="text-gray-600 mb-4">
+            This test doesn't have any questions yet.
+          </p>
+          {onExit && (
+            <Button variant="outline" onClick={onExit}>
+              Go Back
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -208,7 +334,7 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>{test.title}</CardTitle>
+              <CardTitle className="text-xl">{test.title}</CardTitle>
               <p className="text-sm text-gray-600 mt-1">
                 Question {currentQuestionIndex + 1} of {questions.length}
               </p>
@@ -233,9 +359,11 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
           <div className="flex items-center justify-between">
             <Button
               variant="outline"
-              onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+              onClick={previousQuestion}
               disabled={currentQuestionIndex === 0}
+              className="flex items-center gap-2"
             >
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
             
@@ -247,10 +375,12 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
             
             <Button
               variant="outline"
-              onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+              onClick={nextQuestion}
               disabled={currentQuestionIndex === questions.length - 1}
+              className="flex items-center gap-2"
             >
               Next
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
@@ -265,7 +395,7 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
                 Q{currentQuestionIndex + 1}. {currentQuestion.question}
               </CardTitle>
               <Badge variant="secondary">
-                {currentQuestion.marks} mark{currentQuestion.marks !== 1 ? 's' : ''}
+                {currentQuestion.marks || 1} mark{(currentQuestion.marks || 1) !== 1 ? 's' : ''}
               </Badge>
             </div>
             
@@ -281,7 +411,8 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
               value={answers[currentQuestion.id] || ''}
               onValueChange={(value) => handleAnswerSelect(currentQuestion.id, value)}
             >
-              {Object.entries(currentQuestion.options).map(([key, value]) => (
+              {currentQuestion.options && typeof currentQuestion.options === 'object' && 
+                Object.entries(currentQuestion.options).map(([key, value]) => (
                 <div key={key} className="flex items-center space-x-2 p-3 rounded hover:bg-gray-50">
                   <RadioGroupItem value={key} id={`${currentQuestion.id}-${key}`} />
                   <Label 
@@ -289,7 +420,7 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
                     className="flex-1 cursor-pointer"
                   >
                     <span className="font-medium mr-2">({key})</span>
-                    {value}
+                    {String(value)}
                   </Label>
                 </div>
               ))}
@@ -315,7 +446,7 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
                     ? (currentQuestionIndex === index ? 'bg-green-600 hover:bg-green-700' : 'border-green-500 text-green-600')
                     : ''
                 }`}
-                onClick={() => setCurrentQuestionIndex(index)}
+                onClick={() => navigateToQuestion(index)}
               >
                 {answers[questions[index]?.id] && currentQuestionIndex !== index && (
                   <CheckCircle className="h-4 w-4" />
@@ -354,9 +485,14 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
             </Alert>
           )}
           
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
+            {onExit && (
+              <Button variant="outline" onClick={onExit} disabled={isSubmitting}>
+                Exit Test
+              </Button>
+            )}
             <Button
-              onClick={() => handleSubmit()}
+              onClick={() => setShowSubmitDialog(true)}
               disabled={isSubmitting}
               size="lg"
               className="px-8"
@@ -367,6 +503,34 @@ export default function TestInterface({ testId, onTestComplete }: TestInterfaceP
           </div>
         </CardContent>
       </Card>
+
+      {/* Submit Confirmation Dialog */}
+      <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Test?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to submit your test? This action cannot be undone.
+              {answeredCount < questions.length && (
+                <div className="mt-2 text-yellow-600">
+                  Warning: You have {questions.length - answeredCount} unanswered questions.
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              setShowSubmitDialog(false);
+              handleSubmit();
+            }}>
+              Submit Test
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -56,7 +56,10 @@ export interface ReviewResult {
 }
 
 // Hermann Ebbinghaus Spaced Repetition Algorithm (SM-2)
-export function calculateNextReview(card: Flashcard, quality: number): Partial<Flashcard> {
+export function calculateNextReview(
+  card: FlashcardData,
+  quality: number
+): Partial<FlashcardData> {
   let { ease_factor, interval_days, review_count } = card;
   
   // Increment review count

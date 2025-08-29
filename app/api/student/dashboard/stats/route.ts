@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createClient();
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await (await supabase).auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -20,13 +20,17 @@ export async function GET(request: NextRequest) {
       quizAttemptsResult
     ] = await Promise.all([
       // Enrollments
-      supabase
+      (await
+        // Enrollments
+        supabase)
         .from('enrollments')
         .select('*, courses(*)')
         .eq('user_id', user.id),
 
       // Study analytics for current week
-      supabase
+      (await
+        // Study analytics for current week
+        supabase)
         .from('user_study_analytics')
         .select('*')
         .eq('user_id', user.id)
@@ -34,14 +38,18 @@ export async function GET(request: NextRequest) {
         .order('date', { ascending: false }),
 
       // Due flashcards
-      supabase
+      (await
+        // Due flashcards
+        supabase)
         .from('user_flashcard_progress')
         .select('*')
         .eq('user_id', user.id)
         .lte('next_review_date', new Date().toISOString().split('T')[0]),
 
       // Recent quiz attempts
-      supabase
+      (await
+        // Recent quiz attempts
+        supabase)
         .from('quiz_attempts')
         .select('*')
         .eq('user_id', user.id)

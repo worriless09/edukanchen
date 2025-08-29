@@ -32,8 +32,8 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useUser } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
-import CourseCard from '@/components/features/CourseCard';
-import FlashcardDeck from '@/components/features/FlashcardDeck';
+import CourseCard from '@/components/courses/CourseCard';
+import FlashcardDeck from '@/components/flashcards/FlashcardDeck';
 
 // Types and Interfaces
 interface DashboardStats {

@@ -1,3 +1,4 @@
+
 // components/flashcards/FlashcardDeck.tsx
 'use client';
 
@@ -5,7 +6,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Flashcard } from '@/types/flashcard';
-import { calculateNextReview, getDueCards, getStudyStats } from '@/lib/algorithms/spacedRepetition';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,35 +13,41 @@ import { RotateCcw, Eye, EyeOff, Plus, BookOpen } from 'lucide-react';
 import FlashcardCreator from './FlashcardCreator';
 import { Badge } from '@/components/ui/badge';
 
-// Raw DB row shape (adjust fields if actual table differs)
+// Fixed DB row shape that matches the actual Flashcard type
 type DbFlashcard = {
   id: string;
   user_id: string;
   subject: string | null;
-  category: string | null;
+  category?: string | null;
   question: string | null;
   answer: string | null;
-  ease: number | null;
   interval: number | null;
   repetitions: number | null;
-  next_review_date: Date| null; // ISO string from Supabase
-  created_at: Date | null;
-  updated_at: Date | null;
+  difficulty_level: number | null;
+  next_review_date: string | null; // ISO string from Supabase
+  review_count: number | null;
+  ease_factor: number | null;
+  interval_days: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
-// Map DB row -> app Flashcard type the algorithms/components expect
+// Fixed mapping function with correct field names
 function mapDbToFlashcard(row: DbFlashcard): Flashcard {
   return {
     id: row.id,
     user_id: row.user_id,
     subject: row.subject ?? '',
-    category: row.category ?? undefined, // or '' if preferred
+    category: row.category ?? undefined,
     question: row.question ?? '',
     answer: row.answer ?? '',
-    ease: typeof row.ease === 'number' ? row.ease : 2.5,
-    interval: typeof row.interval === 'number' ? row.interval : 0,
-    repetitions: typeof row.repetitions === 'number' ? row.repetitions : 0,
+    interval: row.interval ?? 0,
+    repetitions: row.repetitions ?? 0,
+    difficulty_level: row.difficulty_level ?? 2.5,
     next_review_date: row.next_review_date ? new Date(row.next_review_date) : new Date(),
+    review_count: row.review_count ?? 0,
+    ease_factor: row.ease_factor ?? 2.5,
+    interval_days: row.interval_days ?? 0,
     created_at: row.created_at ? new Date(row.created_at) : new Date(),
     updated_at: row.updated_at ? new Date(row.updated_at) : new Date(),
   };
@@ -78,7 +84,6 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       setSessionStats({ correct: 0, total: 0 });
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, subject, category]);
 
   const fetchFlashcards = async () => {
@@ -106,10 +111,9 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
       // Map DB rows to app type
       const cards: Flashcard[] = (data ?? []).map((row: DbFlashcard) => mapDbToFlashcard(row));
 
-      // Fix: set Flashcard[] state
       setFlashcards(cards);
 
-      // Fix: pass Flashcard[] to algorithms
+      // Get cards due for review
       const dueCards = getDueCards(cards);
       setSessionCards(dueCards);
 
@@ -125,6 +129,74 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fixed getDueCards function
+  const getDueCards = (cards: Flashcard[]): Flashcard[] => {
+    const now = new Date();
+    return cards.filter(card => new Date(card.next_review_date) <= now);
+  };
+
+  // Fixed getStudyStats function
+  const getStudyStats = (cards: Flashcard[]) => {
+    const now = new Date();
+    const dueCards = cards.filter(card => new Date(card.next_review_date) <= now);
+    const newCards = cards.filter(card => card.review_count === 0);
+    const learningCards = cards.filter(card => 
+      card.review_count > 0 && card.review_count < 3
+    );
+    const matureCards = cards.filter(card => card.review_count >= 3);
+    
+    return {
+      total: cards.length,
+      due: dueCards.length,
+      new: newCards.length,
+      learning: learningCards.length,
+      mature: matureCards.length,
+    };
+  };
+
+  // Fixed calculateNextReview function
+  const calculateNextReview = (card: Flashcard, quality: number): Partial<Flashcard> => {
+    let { ease_factor, interval_days, review_count } = card;
+    
+    // Increment review count
+    review_count = (review_count || 0) + 1;
+    
+    if (quality >= 3) {
+      // Correct response
+      if (review_count === 1) {
+        interval_days = 1;
+      } else if (review_count === 2) {
+        interval_days = 6;
+      } else {
+        interval_days = Math.round((interval_days || 1) * (ease_factor || 2.5));
+      }
+    } else {
+      // Incorrect response - restart the learning process
+      review_count = 0;
+      interval_days = 1;
+    }
+    
+    // Adjust ease factor
+    ease_factor = (ease_factor || 2.5) + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    
+    // Minimum ease factor of 1.3
+    if (ease_factor < 1.3) {
+      ease_factor = 1.3;
+    }
+    
+    // Calculate next review date
+    const nextReviewDate = new Date();
+    nextReviewDate.setDate(nextReviewDate.getDate() + interval_days);
+    
+    return {
+      ease_factor: Math.round(ease_factor * 100) / 100,
+      interval_days,
+      review_count,
+      next_review_date: nextReviewDate,
+      updated_at: new Date(),
+    };
   };
 
   const handleReview = async (quality: number) => {
@@ -174,7 +246,12 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
   const progress = sessionCards.length > 0 ? (currentIndex / sessionCards.length) * 100 : 0;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
   }
 
   if (showCreator) {
@@ -367,3 +444,5 @@ export default function FlashcardDeck({ subject, category }: FlashcardDeckProps)
     </div>
   );
 }
+
+

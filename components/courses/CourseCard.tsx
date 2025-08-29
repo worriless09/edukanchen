@@ -12,21 +12,28 @@ import { Course } from '@/types/course';
 
 interface CourseCardProps {
   course: Course;
+  variant?: "default" | "compact";  // 👈 optional
+  showEnrollButton?: boolean;  
 }
 
-export default function CourseCard({ course }: CourseCardProps) {
+export default function CourseCard({ 
+  course,
+variant = "default", 
+  showEnrollButton = true 
+}: CourseCardProps) {
   const { hasAccess } = useAuth();
   const canAccess = hasAccess(course.tier);
 
   return (
-    <Card className="h-full hover:shadow-lg transition-shadow">
+    <Card className={`h-full hover:shadow-lg transition-shadow ${variant === "compact" ? "p-2" : ""}`}>
+      {/* Thumbnail */}
       <div className="relative">
         <Image
           src={course.thumbnail_url || '/placeholder-course.jpg'}
           alt={course.title}
           width={400}
           height={200}
-          className="w-full h-48 object-cover rounded-t-lg"
+          className={`w-full ${variant === "compact" ? "h-32" : "h-48"} object-cover rounded-t-lg`}
         />
         
         <div className="absolute top-2 right-2">
@@ -51,13 +58,15 @@ export default function CourseCard({ course }: CourseCardProps) {
       
       <CardContent className="p-4">
         <div className="space-y-2">
-          <h3 className="font-semibold text-lg line-clamp-2">{course.title}</h3>
+          <h3 className={`font-semibold ${variant === "compact" ? "text-base" : "text-lg"} line-clamp-2`}>
+            {course.title}
+          </h3>
           
-          {course.description && (
+          {variant !== "compact" && course.description && (
             <p className="text-sm text-gray-600 line-clamp-3">{course.description}</p>
           )}
           
-          {course.instructor_name && (
+          {course.instructor_name && variant !== "compact" && (
             <p className="text-sm text-blue-600">By {course.instructor_name}</p>
           )}
           
@@ -80,6 +89,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             </div>
           </div>
           
+          {showEnrollButton && (
           <div className="pt-2">
             {canAccess ? (
               <Link href={`/courses/${course.id}`}>
@@ -101,6 +111,7 @@ export default function CourseCard({ course }: CourseCardProps) {
               </div>
             )}
           </div>
+          )}
         </div>
       </CardContent>
     </Card>

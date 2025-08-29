@@ -1,11 +1,11 @@
-// lib/supabase.ts
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from './database.types'; // Generated types
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export const supabase: SupabaseClient<Database> = createClient<Database>(
-  supabaseUrl,
-  supabaseKey
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// For server-side usage
+export async function createServerSupabaseClient() {
+  return createClient(supabaseUrl, supabaseAnonKey)
+}

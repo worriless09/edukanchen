@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-     "typeRoots": ["./node_modules/@types", "./lib/types"],
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "es6"],
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "ES6"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -21,8 +21,16 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/PricingSection.js", "components/VideoPlayer.js", "./lib/types/**/*"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types/**/*"
+  ],
   "exclude": ["node_modules"]
 }
