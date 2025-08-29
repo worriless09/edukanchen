@@ -11,10 +11,15 @@ interface Subscription {
   subscription_plans: {
     name: string;
     display_name: string;
-    hrm_features_enabled: boolean;
     max_courses: number;
     max_flashcard_decks: number;
     max_quiz_attempts_per_day: number;
+    unlimited_practice: boolean;
+    mock_tests_enabled: boolean;
+    detailed_analytics: boolean;
+    priority_support: boolean;
+    offline_access: boolean;
+    hindi_support: boolean;
   };
 }
 
@@ -62,12 +67,22 @@ export function useSubscription() {
     if (!subscription) return false;
 
     switch (feature) {
-      case 'hrm_features':
-        return subscription.subscription_plans.hrm_features_enabled;
       case 'unlimited_courses':
         return subscription.subscription_plans.max_courses === null;
       case 'unlimited_flashcards':
         return subscription.subscription_plans.max_flashcard_decks === null;
+      case 'unlimited_practice':
+        return subscription.subscription_plans.unlimited_practice;
+      case 'mock_tests':
+        return subscription.subscription_plans.mock_tests_enabled;
+      case 'detailed_analytics':
+        return subscription.subscription_plans.detailed_analytics;
+      case 'priority_support':
+        return subscription.subscription_plans.priority_support;
+      case 'offline_access':
+        return subscription.subscription_plans.offline_access;
+      case 'hindi_support':
+        return subscription.subscription_plans.hindi_support;
       default:
         return false;
     }

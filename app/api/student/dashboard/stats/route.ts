@@ -20,17 +20,13 @@ export async function GET(request: NextRequest) {
       quizAttemptsResult
     ] = await Promise.all([
       // Enrollments
-      (await
-        // Enrollments
-        supabase)
+      (await supabase)
         .from('enrollments')
         .select('*, courses(*)')
         .eq('user_id', user.id),
 
       // Study analytics for current week
-      (await
-        // Study analytics for current week
-        supabase)
+      (await supabase)
         .from('user_study_analytics')
         .select('*')
         .eq('user_id', user.id)
@@ -38,18 +34,14 @@ export async function GET(request: NextRequest) {
         .order('date', { ascending: false }),
 
       // Due flashcards
-      (await
-        // Due flashcards
-        supabase)
+      (await supabase)
         .from('user_flashcard_progress')
         .select('*')
         .eq('user_id', user.id)
         .lte('next_review_date', new Date().toISOString().split('T')[0]),
 
       // Recent quiz attempts
-      (await
-        // Recent quiz attempts
-        supabase)
+      (await supabase)
         .from('quiz_attempts')
         .select('*')
         .eq('user_id', user.id)
@@ -73,7 +65,6 @@ export async function GET(request: NextRequest) {
       average_score: analytics.length > 0 
         ? analytics.reduce((sum: any, a: { average_quiz_score: any; }) => sum + (a.average_quiz_score || 0), 0) / analytics.length 
         : 0,
-      reasoning_improvement: calculateReasoningImprovement(analytics),
       weekly_goal_progress: calculateWeeklyGoalProgress(analytics)
     };
 
@@ -121,18 +112,6 @@ function calculateStudyStreak(analytics: any[]): number {
   }
 
   return streak;
-}
-
-function calculateReasoningImprovement(analytics: any[]): number {
-  if (analytics.length < 2) return 0;
-
-  const recent = analytics.slice(0, 3);
-  const older = analytics.slice(-3);
-
-  const recentAvg = recent.reduce((sum, a) => sum + (a.average_reasoning_depth || 0), 0) / recent.length;
-  const olderAvg = older.reduce((sum, a) => sum + (a.average_reasoning_depth || 0), 0) / older.length;
-
-  return olderAvg > 0 ? (recentAvg - olderAvg) / olderAvg : 0;
 }
 
 function calculateWeeklyGoalProgress(analytics: any[]): number {
