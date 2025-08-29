@@ -56,16 +56,16 @@ export function HeroSectionResponsive() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-20">
-        <div className="grid lg:grid-cols-2 items-center gap-8 lg:gap-12 xl:gap-16">
+        <div className="grid lg:grid-cols-5 items-center gap-12 lg:gap-16 xl:gap-20">
           
-          {/* Left Content */}
-          <div className={`text-center lg:text-left space-y-6 md:space-y-8 transition-all duration-1000 ${
+          {/* Left Content - Takes up 3 columns on large screens */}
+          <div className={`lg:col-span-3 text-center lg:text-left space-y-6 md:space-y-8 transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
             
             {/* Main Heading */}
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-regular text-gray-800 leading-tight tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-5xl font-regular text-gray-800 leading-tight tracking-tight">
                 Transform Your Dreams into{" "}
                 <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                   Civil Service
@@ -75,7 +75,7 @@ export function HeroSectionResponsive() {
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="text-lg md:text-xl lg:text-1.5xl text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
                 Join India's most innovative coaching institute combining traditional teaching excellence with{" "}
                 <span className="font-semibold text-cyan-800">AI-powered learning tools</span>. 
                 Specialized preparation for UPSC, SSC, and State PCS examinations.
@@ -147,23 +147,23 @@ export function HeroSectionResponsive() {
             </div>
           </div>
 
-          {/* Right Content - Interactive Card */}
-          <div className={`relative transition-all duration-1000 delay-300 ${
+          {/* Right Content - Interactive Card - Takes up 2 columns on large screens */}
+          <div className={`lg:col-span-2 relative transition-all duration-1000 delay-300 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}>
-            <div className="relative z-10">
+            <div className="relative z-10 max-w-md mx-auto lg:max-w-none">
               <Card className="bg-white/95 backdrop-blur-lg shadow-2xl border-0 hover:shadow-3xl transition-shadow duration-300">
-                <CardContent className="p-6 md:p-8">
-                  <div className="space-y-6">
+                <CardContent className="p-5 md:p-6">
+                  <div className="space-y-5">
                     
                     {/* Header */}
                     <div className="text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Ready to Start?</h3>
-                      <p className="text-gray-600 text-sm md:text-base">Join thousands of successful aspirants</p>
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Ready to Start?</h3>
+                      <p className="text-gray-600 text-sm">Join thousands of successful aspirants</p>
                     </div>
 
                     {/* Feature Grid - Responsive */}
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       {[
                         { icon: BookOpen, label: "50+ Courses", desc: "Comprehensive Study", color: "blue" },
                         { icon: Users, label: "Expert Faculty", desc: "Experienced Teachers", color: "green" },
@@ -172,28 +172,28 @@ export function HeroSectionResponsive() {
                       ].map((feature, index) => (
                         <div 
                           key={index} 
-                          className={`text-center p-3 md:p-4 rounded-xl transition-all duration-300 hover:scale-105 cursor-pointer ${
+                          className={`text-center p-3 rounded-lg transition-all duration-300 hover:scale-105 cursor-pointer ${
                             getColorClasses(feature.color)
                           }`}
                         >
-                          <feature.icon className="h-6 w-6 md:h-8 md:w-8 mx-auto mb-2 text-current" />
-                          <div className="font-semibold text-gray-900 text-sm md:text-base">{feature.label}</div>
-                          <div className="text-xs md:text-sm text-gray-600 mt-1">{feature.desc}</div>
+                          <feature.icon className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-2 text-current" />
+                          <div className="font-semibold text-gray-900 text-sm">{feature.label}</div>
+                          <div className="text-xs text-gray-600 mt-1">{feature.desc}</div>
                         </div>
                       ))}
                     </div>
 
                     {/* CTA Button */}
                     <Link href="/register" className="block">
-                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 md:py-4 text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 text-base font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">
                         Get Started Free
-                        <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+                        <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                       </Button>
                     </Link>
 
                     {/* Trust Badge */}
                     <div className="text-center">
-                      <p className="text-xs md:text-sm text-gray-500">
+                      <p className="text-xs text-gray-500">
                         ✨ Free trial • No credit card required • Join 1000+ aspirants
                       </p>
                     </div>
@@ -203,8 +203,8 @@ export function HeroSectionResponsive() {
             </div>
 
             {/* Floating Elements */}
-            <div className="absolute -top-6 -right-6 w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse"></div>
-            <div className="absolute -bottom-6 -left-6 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse animation-delay-2000"></div>
+            <div className="absolute -top-4 -right-4 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="absolute -bottom-4 -left-4 w-20 h-20 md:w-24 md:h-24 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse animation-delay-500"></div>
           </div>
         </div>
       </div>

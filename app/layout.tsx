@@ -8,6 +8,7 @@ import "./globals.css"
 import { AuthProvider } from "@/components/auth/AuthProvider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import Image from "next/image"
+import { Navigation } from '@/components/Navigation'
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -98,7 +99,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-
+<Navigation />
               <main>{children}</main>
             </div>
           </AuthProvider>
