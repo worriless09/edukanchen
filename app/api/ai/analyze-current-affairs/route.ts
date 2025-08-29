@@ -2,6 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 interface CurrentAffairsAnalysis {
   relevanceScore: number; // 1-10 scale
@@ -50,6 +55,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Analyze current affairs content
+    const prompt = `Analyze this current affairs content for Indian exam preparation:
+${text}
+
+Focus on: ${examType || 'UPSC'} exam relevance
+Provide: key points, related topics, potential questions, difficulty level`;
     const analysis = await analyzeCurrentAffairs(text, examType);
 
     // Log the analysis request
