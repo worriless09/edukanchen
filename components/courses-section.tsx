@@ -1,81 +1,100 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Clock, Users, Star } from "lucide-react"
+import { useState } from "react"
 
 const courses = [
   {
-    id: 1,
-    title: "UPSC CSE Complete Course",
+    id: "upsc",
     category: "UPSC",
+    title: "UPSC CSE Complete Course",
     duration: "12 months",
-    students: 15000,
+    schedule: "Morning & Evening",
+    students: "15,000",
     rating: 4.9,
-    price: 25000,
-    originalPrice: 35000,
+    price: "₹25,000",
+    originalPrice: "₹35,000",
+    discount: "29% OFF",
     features: ["Live Classes", "AI Flashcards", "Mock Tests", "Current Affairs"],
-    batch: "Morning & Evening",
-    level: "Beginner to Advanced",
+    theme: "blue",
+    topBorder: "bg-gradient-to-r from-blue-500 to-purple-600",
   },
   {
-    id: 2,
-    title: "SSC CGL Comprehensive",
+    id: "ssc",
     category: "SSC",
+    title: "SSC CGL Comprehensive",
     duration: "8 months",
-    students: 12000,
+    schedule: "Weekend",
+    students: "12,000",
     rating: 4.8,
-    price: 15000,
-    originalPrice: 20000,
+    price: "₹15,000",
+    originalPrice: "₹20,000",
+    discount: "25% OFF",
     features: ["Video Lectures", "Practice Tests", "Doubt Clearing", "Study Material"],
-    batch: "Weekend",
-    level: "Intermediate",
+    theme: "green",
+    topBorder: "bg-gradient-to-r from-green-500 to-teal-600",
   },
   {
-    id: 3,
-    title: "State PCS Foundation",
+    id: "state-pcs",
     category: "State PCS",
+    title: "State PCS Foundation",
     duration: "10 months",
-    students: 8000,
+    schedule: "Evening",
+    students: "8,000",
     rating: 4.7,
-    price: 18000,
-    originalPrice: 25000,
+    price: "₹18,000",
+    originalPrice: "₹25,000",
+    discount: "28% OFF",
     features: ["State-specific Content", "Regional Language Support", "Mock Interviews"],
-    batch: "Evening",
-    level: "Beginner",
+    theme: "orange",
+    topBorder: "bg-gradient-to-r from-orange-500 to-red-600",
   },
 ]
 
 const categories = ["All", "UPSC", "SSC", "State PCS"]
 
 export function CoursesSection() {
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [activeCategory, setActiveCategory] = useState("All")
 
   const filteredCourses =
-    selectedCategory === "All" ? courses : courses.filter((course) => course.category === selectedCategory)
+    activeCategory === "All" ? courses : courses.filter((course) => course.category === activeCategory)
+
+  const getButtonTheme = (theme: string) => {
+    switch (theme) {
+      case "blue":
+        return "bg-blue-600 hover:bg-blue-700"
+      case "green":
+        return "bg-green-600 hover:bg-green-700"
+      case "orange":
+        return "bg-orange-600 hover:bg-orange-700"
+      default:
+        return "bg-gray-600 hover:bg-gray-700"
+    }
+  }
 
   return (
-    <section id="courses" className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="courses" className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section with Title and Subtitle */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-normal text-gray-900 mb-4">Our Premium Courses</h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto font-light">
-            Comprehensive preparation programs designed for success.
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-1">
+            Our Premium <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-0 py-0">Courses</span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed py-0">
+            Comprehensive preparation programs designed for success with expert guidance and cutting-edge technology.
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex justify-center mb-12">
-          <div className="flex flex-wrap gap-2 bg-white rounded-lg p-2 border border-gray-200">
+        {/* Filter Tabs */}
+        <div className="flex justify-center mb-10">
+          <div className="bg-gray-100 rounded-full p-1 flex space-x-1">
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                  selectedCategory === category
-                    ? "bg-primary-600 text-white"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setActiveCategory(category)}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  activeCategory === category ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 {category}
@@ -85,77 +104,92 @@ export function CoursesSection() {
         </div>
 
         {/* Course Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8">
           {filteredCourses.map((course) => (
-            <div
-              key={course.id}
-              className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-200"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <Badge className="bg-primary-100 text-primary-800 font-medium">{course.category}</Badge>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium text-gray-700">{course.rating}</span>
+            <div key={course.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+              {/* Colored Top Border */}
+              <div className={`h-1 ${course.topBorder}`}></div>
+
+              <div className="p-6 text-center">
+                {/* Course Badge and Rating */}
+                <div className="flex items-center justify-between mb-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      course.theme === "blue"
+                        ? "bg-blue-100 text-blue-800"
+                        : course.theme === "green"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-orange-100 text-orange-800"
+                    }`}
+                  >
+                    {course.category}
+                  </span>
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                    <span className="text-sm font-medium">{course.rating}</span>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{course.title}</h3>
+                {/* Course Title */}
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{course.title}</h3>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
+                {/* Course Info */}
+                <div className="space-y-2 mb-4 text-sm text-gray-600">
+                  <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-2" />
-                    {course.duration} • {course.batch}
+                    <span>
+                      {course.duration} • {course.schedule}
+                    </span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
+                  <div className="flex items-center">
                     <Users className="h-4 w-4 mr-2" />
-                    {course.students.toLocaleString()} students enrolled
+                    <span>{course.students} students enrolled</span>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1 mb-4">
+                {/* Features */}
+                <div className="flex flex-wrap gap-2 mb-6">
                   {course.features.map((feature, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                    <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md">
                       {feature}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
+                {/* Pricing */}
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <span className="text-xl font-medium text-gray-900">₹{course.price.toLocaleString()}</span>
-                    <span className="text-sm text-gray-500 line-through ml-2">
-                      ₹{course.originalPrice.toLocaleString()}
-                    </span>
+                    <span className="text-2xl font-bold text-gray-900">{course.price}</span>
+                    <span className="text-sm text-gray-500 line-through ml-2">{course.originalPrice}</span>
                   </div>
-                  <Badge className="bg-green-100 text-green-700 font-medium">
-                    {Math.round((1 - course.price / course.originalPrice) * 100)}% OFF
-                  </Badge>
+                  <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
+                    {course.discount}
+                  </span>
                 </div>
 
-                <div className="flex justify-between space-x-4">
+                {/* Action Buttons */}
+                <div className="space-y-3">
                   <Button
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50 font-medium bg-transparent"
+                    size="sm"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xl text-center mx-16"
                   >
-                    Learn More
-                  </Button>
-                  <Button className="w-full hover:bg-primary-500 text-white font-medium bg-primary-500">
-                    Enroll Now
-                  </Button>
+  Enroll Now →
+</Button>
+
+<button className="w-full text-gray-600 hover:text-gray-900 text-sm font-medium">
+  Learn More
+</button>
+
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-gray-300 text-gray-700 hover:bg-gray-50 font-medium bg-transparent"
-          >
-            View All Courses
+        {/* View All Courses Button */}
+        <div className="flex justify-center mt-12">
+          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium">
+            View All Courses →
           </Button>
         </div>
       </div>

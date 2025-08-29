@@ -1,4 +1,4 @@
-import { BookOpen, Facebook, Twitter, Instagram, Youtube, Mail } from 'lucide-react'
+import { BookOpen, Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react"
 
 export function Footer() {
   return (
@@ -8,7 +8,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <BookOpen className="h-8 w-8 text-primary-400" />
+              <BookOpen className="h-8 w-8 text-cyan-800" />
               <span className="text-2xl font-bold">Kanchen Academy</span>
             </div>
             <p className="text-gray-400">
@@ -26,11 +26,31 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-primary-400">About Us</a></li>
-              <li><a href="#courses" className="hover:text-primary-400">Courses</a></li>
-              <li><a href="#faculty" className="hover:text-primary-400">Faculty</a></li>
-              <li><a href="#" className="hover:text-primary-400">Success Stories</a></li>
-              <li><a href="#contact" className="hover:text-primary-400">Contact</a></li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#courses" className="hover:text-primary-400">
+                  Courses
+                </a>
+              </li>
+              <li>
+                <a href="#faculty" className="hover:text-primary-400">
+                  Faculty
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  Success Stories
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="hover:text-primary-400">
+                  Contact
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -38,11 +58,31 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Popular Courses</h3>
             <ul className="space-y-2 text-gray-400">
-              <li><a href="#" className="hover:text-primary-400">UPSC CSE</a></li>
-              <li><a href="#" className="hover:text-primary-400">SSC CGL</a></li>
-              <li><a href="#" className="hover:text-primary-400">SSC CHSL</a></li>
-              <li><a href="#" className="hover:text-primary-400">State PCS</a></li>
-              <li><a href="#" className="hover:text-primary-400">Banking Exams</a></li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  UPSC CSE
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  SSC CGL
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  SSC CHSL
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  State PCS
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-primary-400">
+                  Banking Exams
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -51,12 +91,12 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
             <p className="text-gray-400 mb-4">Subscribe to get latest updates and study materials.</p>
             <div className="flex">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 placeholder="Enter your email"
                 className="flex-1 py-2 bg-gray-800 border border-gray-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 mx-0 text-left px-0 ml-0 mr-0 w-2"
               />
-              <button className="px-4 py-2 bg-primary-400 hover:bg-primary-500 rounded-r-md">
+              <button className="px-4 py-2 hover:bg-primary-500 rounded-r-md bg-cyan-800">
                 <Mail className="h-4 w-4" />
               </button>
             </div>

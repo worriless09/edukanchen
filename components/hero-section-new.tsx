@@ -1,3 +1,4 @@
+// components/hero-section.tsx
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -21,48 +22,35 @@ const achievements = [
   { icon: Star, value: "4.9", label: "Rating" },
 ]
 
-const getAchievementEmoji = (label: string) => {
-  switch (label) {
-    case "Students":
-      return "👥"
-    case "Selections":
-      return "🏆"
-    case "Courses":
-      return "📚"
-    case "Rating":
-      return "⭐"
-    default:
-      return "📚"
-  }
-}
-
 export function HeroSection() {
   const [currentCta, setCurrentCta] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentCta((prev) => (prev + 1) % ctaMessages.length)
-    }, 3000)
+    }, 3000) // Changed to 3 seconds for better readability
 
     return () => clearInterval(interval)
   }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 items-center gap-10 my-0 py-0 h-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid lg:grid-cols-2 items-center gap-12">
           {/* Left side - Main content */}
           <div className="text-center lg:text-left space-y-8">
             {/* Main Heading */}
             <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl text-gray-900 leading-tight tracking-tighter my-0 lg:text-5xl font-sans font-normal gap-0 mx-0 w-fit flex-row items-stretch px-0 h-fit text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Transform Your Dreams into{" "}
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-0 py-0">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Civil Service Success
                 </span>
               </h1>
@@ -77,10 +65,7 @@ export function HeroSection() {
               {achievements.map((achievement, index) => (
                 <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                   <CardContent className="p-4 text-center">
-                    <div className="bg-white border-white">
-                      <span className="bg-white w-auto text-3xl" aria-hidden="true">{getAchievementEmoji(achievement.label)}</span>
-                      <span className="sr-only">{achievement.label} icon</span>
-                    </div>
+                    <achievement.icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
                     <div className="text-2xl font-bold text-gray-900">{achievement.value}</div>
                     <div className="text-sm text-gray-600">{achievement.label}</div>
                   </CardContent>
@@ -92,7 +77,7 @@ export function HeroSection() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/register">
-                  <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
                     Start Learning Today
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
@@ -137,8 +122,8 @@ export function HeroSection() {
           {/* Right side - Visual content */}
           <div className="relative">
             <div className="relative z-10">
-              <Card className="bg-white/90 backdrop-blur-sm shadow-2xl border-0 py-0 flex-col my-0">
-                <CardContent className="p-8 py-3 my-0">
+              <Card className="bg-white/90 backdrop-blur-sm shadow-2xl border-0">
+                <CardContent className="p-8">
                   <div className="space-y-6">
                     <div className="text-center">
                       <h3 className="text-2xl font-bold text-gray-900 mb-2">Ready to Start?</h3>
@@ -170,7 +155,7 @@ export function HeroSection() {
 
                     <Link href="/register" className="block">
                       <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3">
-                        Get Started For Free
+                        Get Started Free
                       </Button>
                     </Link>
                   </div>
@@ -179,6 +164,7 @@ export function HeroSection() {
             </div>
 
             {/* Background decoration for the card */}
+            <div className="absolute -top-4 -right-4 w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg -z-10"></div>
           </div>
         </div>
       </div>

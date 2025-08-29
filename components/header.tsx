@@ -8,11 +8,11 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-2 h-fit">
+          <div className="flex items-center">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
               alt="Kanchen Academy Logo"
@@ -21,14 +21,14 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 text-base font-mono font-semibold">
+          <nav className="hidden md:flex items-center space-x-8 font-medium">
             <a
               href="#courses"
               onClick={(e) => {
                 e.preventDefault()
                 document.getElementById("courses")?.scrollIntoView({ behavior: "smooth" })
               }}
-              className="hover:text-gray-900 text-sm text-black cursor-pointer font-sans font-semibold"
+              className="hover:text-blue-600 transition-colors cursor-pointer font-semibold text-black"
             >
               Courses
             </a>
@@ -38,7 +38,7 @@ export function Header() {
                 e.preventDefault()
                 document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
               }}
-              className="hover:text-gray-900 text-sm font-sans text-black cursor-pointer font-semibold"
+              className="hover:text-blue-600 transition-colors cursor-pointer text-black font-semibold"
             >
               Features
             </a>
@@ -48,7 +48,7 @@ export function Header() {
                 e.preventDefault()
                 document.getElementById("faculty")?.scrollIntoView({ behavior: "smooth" })
               }}
-              className="hover:text-gray-900 text-sm font-sans text-black cursor-pointer font-semibold"
+              className="hover:text-blue-600 transition-colors cursor-pointer text-black font-semibold"
             >
               Faculty
             </a>
@@ -58,17 +58,17 @@ export function Header() {
                 e.preventDefault()
                 document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
               }}
-              className="hover:text-gray-900 text-sm text-black font-sans cursor-pointer font-semibold"
+              className="hover:text-blue-600 transition-colors cursor-pointer text-black font-semibold"
             >
               Contact
             </a>
             <Button
               variant="outline"
-              className="hover:bg-gray-50 text-sm font-sans text-black bg-transparent font-semibold border-gray-300"
+              className="border-gray-300 hover:bg-gray-50 bg-transparent text-black font-semibold"
             >
               Login
             </Button>
-            <Button className="hover:bg-primary-500 text-white text-sm font-sans bg-primary-500 font-semibold">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg font-semibold">
               Book Trial Class
             </Button>
           </nav>
@@ -76,14 +76,14 @@ export function Header() {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-700 hover:text-gray-900">
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200/50 bg-white/95 backdrop-blur-sm">
             <div className="flex flex-col space-y-4">
               <a
                 href="#courses"
@@ -92,7 +92,7 @@ export function Header() {
                   document.getElementById("courses")?.scrollIntoView({ behavior: "smooth" })
                   setIsMenuOpen(false)
                 }}
-                className="text-gray-700 hover:text-gray-900 font-normal cursor-pointer"
+                className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer"
               >
                 Courses
               </a>
@@ -103,7 +103,7 @@ export function Header() {
                   document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
                   setIsMenuOpen(false)
                 }}
-                className="text-gray-700 hover:text-gray-900 font-normal cursor-pointer"
+                className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer"
               >
                 Features
               </a>
@@ -114,7 +114,7 @@ export function Header() {
                   document.getElementById("faculty")?.scrollIntoView({ behavior: "smooth" })
                   setIsMenuOpen(false)
                 }}
-                className="text-gray-700 hover:text-gray-900 font-normal cursor-pointer"
+                className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer"
               >
                 Faculty
               </a>
@@ -125,7 +125,7 @@ export function Header() {
                   document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
                   setIsMenuOpen(false)
                 }}
-                className="text-gray-700 hover:text-gray-900 font-normal cursor-pointer"
+                className="text-gray-700 hover:text-blue-600 font-medium cursor-pointer"
               >
                 Contact
               </a>
@@ -133,7 +133,7 @@ export function Header() {
                 <Button variant="outline" className="border-gray-300 text-gray-700 bg-transparent">
                   Login
                 </Button>
-                <Button className="bg-primary-400 hover:bg-primary-500 text-white">Book Trial Class</Button>
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">Book Trial Class</Button>
               </div>
             </div>
           </div>

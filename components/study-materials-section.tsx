@@ -91,9 +91,9 @@ export function StudyMaterialsSection() {
               key={index}
               className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg text-center rounded-4xl bg-blue-100"
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 text-center">
                 <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br text-center border-none ml-28 ${material.gradientFrom} ${material.gradientTo} flex mb-4 shadow-lg items-center justify-center`}
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br text-center border-none ml-36 ${material.gradientFrom} ${material.gradientTo} flex mb-4 shadow-lg items-center justify-center`}
                 >
                   <span className="text-2xl filter drop-shadow-sm">{material.icon}</span>
                 </div>
@@ -115,22 +115,22 @@ export function StudyMaterialsSection() {
                 {/* Free vs Premium Content */}
                 <div className="space-y-3">
                   <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-left">
-                    <div className="flex items-center gap-2 mb-1 ml-24">
+                    <div className="flex items-center gap-2 mb-1 ml-32">
                       <Badge variant="secondary" className="bg-green-100 text-green-700">
                         FREE
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-700 text-center">{material.freeContent}</p>
+                    <p className="text-sm text-gray-700 text-center justify-center items-center">{material.freeContent}</p>
                   </div>
 
                   <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                    <div className="flex items-center gap-2 mb-1 ml-20">
+                    <div className="flex items-center gap-2 mb-1 ml-28">
                       <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
                         <Crown className="h-3 w-3 mr-1" />
                         PREMIUM
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-700 text-center">{material.premiumContent}</p>
+                    <p className="text-sm text-gray-700 text-center justify-center">{material.premiumContent}</p>
                   </div>
                 </div>
 

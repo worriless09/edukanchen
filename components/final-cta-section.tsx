@@ -1,38 +1,44 @@
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button"
+import { ArrowRight, Phone, Mail } from "lucide-react"
 
 export function FinalCtaSection() {
   return (
-    <section className="py-20 bg-primary-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-primary-100 py-1.5">
-        <h2 className="text-3xl lg:text-4xl text-gray-900 mb-6 font-semibold">
-          Ready to Conquer Your Exam?
-        </h2>
-        <p className="text-lg text-gray-700 mb-8 leading-relaxed font-normal">
-          Join thousands of successful candidates who transformed their preparation with our AI-powered learning system.
-        </p>
-        
-        <Button size="lg" className="hover:bg-primary-500 text-white px-8 py-4 text-base font-medium rounded-lg mb-6 bg-primary-700">
-          Get Started Now
-        </Button>
-        
-        <p className="text-sm text-gray-600 font-light">
-          No credit card required • Cancel anytime • 7-day free trial
-        </p>
-        
-        {/* Additional trust elements */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-600">
-            <div className="flex items-center space-x-2">
-              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full"></div>
-              <span>Money-back guarantee</span>
+    <section className="py-20 bg-gradient-to-r from-cyan-800 to-blue-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">Ready to Start Your Success Journey?</h2>
+          <p className="text-xl mb-8 text-blue-100">
+            Join thousands of successful candidates who transformed their dreams into reality with Kanchen Academy.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button size="lg" className="bg-white text-cyan-800 hover:bg-gray-100 px-8 py-4">
+              Book Free Demo Class
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-cyan-800 px-8 py-4 bg-transparent"
+            >
+              Download Brochure
+            </Button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            <div className="flex items-center justify-center">
+              <Phone className="h-5 w-5 mr-3" />
+              <div>
+                <p className="text-blue-100 text-sm">Call us now</p>
+                <p className="font-semibold">+91 98765 43210</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full"></div>
-              <span>24/7 support</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-1.5 h-1.5 bg-primary-400 rounded-full"></div>
-              <span>Instant access</span>
+            <div className="flex items-center justify-center">
+              <Mail className="h-5 w-5 mr-3" />
+              <div>
+                <p className="text-blue-100 text-sm">Email us</p>
+                <p className="font-semibold">info@kanchenacademy.com</p>
+              </div>
             </div>
           </div>
         </div>
