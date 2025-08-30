@@ -45,7 +45,7 @@ export function HeaderOptimized({ onMenuToggle }: HeaderOptimizedProps) {
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 fixed top-0 left-0 right-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
+        <div className="flex justify-between items-center h-20 md:h-20">
           
           {/* Logo - Clickable and responsive */}
           <Link href="/" className="flex items-center hover:scale-105 transition-transform duration-200">
@@ -53,7 +53,7 @@ export function HeaderOptimized({ onMenuToggle }: HeaderOptimizedProps) {
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
               alt="Kanchen Academy Logo"
               width={150}
-              height={120}
+              height={110}
               className="w-50 h-18 md:w-40 md:h-20 object-contain"
               priority
             />

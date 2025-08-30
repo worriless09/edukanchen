@@ -101,7 +101,7 @@ export function StudyMaterialsSection() {
                 <p className="text-gray-600 text-sm">{material.description}</p>
               </CardHeader>
 
-              <CardContent className="space-y-6 text-left">
+              <CardContent className="space-y-6 text-center">
                 {/* Features */}
                 <div className="space-y-2 text-right">
                   {material.features.map((feature, idx) => (
@@ -114,7 +114,7 @@ export function StudyMaterialsSection() {
 
                 {/* Free vs Premium Content */}
                 <div className="space-y-3">
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-left">
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-center">
                     <div className="flex items-center gap-2 mb-1 ml-32">
                       <Badge variant="secondary" className="bg-green-100 text-green-700">
                         FREE

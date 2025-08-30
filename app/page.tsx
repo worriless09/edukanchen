@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      <UnifiedKanchenAcademy />
+      <UnifiedKanchenAcademy children={undefined} />
       <HeroSectionResponsive />
       <StudyMaterialsSection />
       <FeaturesSection />
