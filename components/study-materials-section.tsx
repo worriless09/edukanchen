@@ -76,7 +76,7 @@ const studyMaterials = [
 
 export function StudyMaterialsSection() {
   return (
-    <section className="py-20 bg-gray-50">
+    <section id="study-ecosystem" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-4 my-0 py-2 bg-sky-50 border-sky-50">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-0 mb-2 py-1">Complete Study Ecosystem</h2>

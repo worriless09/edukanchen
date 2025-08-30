@@ -1,14 +1,30 @@
 // components/header-optimized.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
-export function HeaderOptimized() {
+interface HeaderOptimizedProps {
+  onMenuToggle?: () => void;
+}
+
+export function HeaderOptimized({ onMenuToggle }: HeaderOptimizedProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleNavClick = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -18,8 +34,16 @@ export function HeaderOptimized() {
     }
   }
 
+  const handleMobileMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen)
+    // Call the external onMenuToggle if provided (for sidebar toggle)
+    if (onMenuToggle) {
+      onMenuToggle()
+    }
+  }
+
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 fixed top-0 left-0 right-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           
@@ -39,7 +63,8 @@ export function HeaderOptimized() {
           <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {[
               { id: 'courses', label: 'Courses' },
-              { id: 'features', label: 'Features' }, 
+              { id: 'features', label: 'Features' },
+              { id: 'study-ecosystem', label: 'Study Ecosystem' },
               { id: 'faculty', label: 'Faculty' },
               { id: 'contact', label: 'Contact' }
             ].map((item) => (
@@ -69,12 +94,51 @@ export function HeaderOptimized() {
             >
               Book Trial
             </Button>
+            
+            {/* User Profile Dropdown */}
+            <div className="relative" ref={profileDropdownRef}>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
+              >
+                <span className="text-white text-sm font-medium">👤</span>
+              </button>
+                     
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 animate-fade-in z-50">
+                  <Link 
+                    href="/profile"
+                    className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <Link 
+                    href="/settings"
+                    className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    onClick={() => setIsProfileOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <hr className="my-2 border-gray-200" />
+                  <button 
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      // Add logout logic
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile/Tablet Menu Button */}
           <button 
             className="lg:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 z-50"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={handleMobileMenuToggle}
             aria-label="Toggle mobile menu"
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -89,7 +153,8 @@ export function HeaderOptimized() {
             <div className="flex flex-col space-y-3">
               {[
                 { id: 'courses', label: 'Courses' },
-                { id: 'features', label: 'Features' }, 
+                { id: 'features', label: 'Features' },
+                { id: 'study-ecosystem', label: 'Study Ecosystem' },
                 { id: 'faculty', label: 'Faculty' },
                 { id: 'contact', label: 'Contact' }
               ].map((item) => (

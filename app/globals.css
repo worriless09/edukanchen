@@ -296,3 +296,15 @@ a:focus-visible,
 .animation-delay-200 {
   animation-delay: 200ms;
 }
+
+
+/* For the main content wrapper */
+.main-content {
+  padding-top: 4rem; /* 64px for mobile */
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding-top: 5rem; /* 80px for desktop */
+  }
+}

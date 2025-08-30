@@ -46,7 +46,7 @@ export function HeroSectionResponsive() {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
+    <section className="relative pt-0 h-0-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
       
       {/* Background Elements */}
       <div className="absolute inset-0">
