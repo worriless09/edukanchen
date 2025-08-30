@@ -1,4 +1,4 @@
-import { HeaderOptimized } from "@/components/header-optimized"
+import UnifiedKanchenAcademy from "@/components/UnifiedKanchenAcademy"
 import { HeroSectionResponsive } from "@/components/hero-section-responsive"
 import { StudyMaterialsSection } from "@/components/study-materials-section"
 import { FeaturesSection } from "@/components/features-section"
@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      <HeaderOptimized />
+      <UnifiedKanchenAcademy />
       <HeroSectionResponsive />
       <StudyMaterialsSection />
       <FeaturesSection />
