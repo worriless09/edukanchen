@@ -1,0 +1,30 @@
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# OpenAI Configuration (for AI features)
+OPENAI_API_KEY=your_openai_api_key
+
+# Razorpay Configuration (for payments)
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+
+# Database Configuration (if using direct connection)
+DATABASE_URL=your_database_connection_string
+
+# Email Configuration (optional)
+SMTP_HOST=your_smtp_host
+SMTP_PORT=587
+SMTP_USER=your_smtp_username
+SMTP_PASS=your_smtp_password
+
+# Analytics (optional)
+NEXT_PUBLIC_GA_ID=your_google_analytics_id
+
+# Sentry (optional, for error tracking)
+SENTRY_DSN=your_sentry_dsn

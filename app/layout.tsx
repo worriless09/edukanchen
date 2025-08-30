@@ -5,8 +5,12 @@ import { GeistMono } from "geist/font/mono"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/AuthProvider"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
+import  ErrorBoundary  from "@/components/ErrorBoundary"
 import { ClientLayoutProvider } from "@/components/layout/ClientLayoutProvider"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
+import { SidebarProvider } from "@/components/ui/sidebar"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,7 +23,7 @@ export const metadata: Metadata = {
     "Join India's most innovative coaching institute with AI-powered learning tools for UPSC, SSC, and State PCS examinations. Expert faculty, comprehensive courses, and proven success record.",
   keywords: [
     "UPSC preparation",
-    "civil services coaching", 
+    "civil services coaching",
     "IAS coaching",
     "SSC preparation",
     "state PCS coaching",
@@ -70,11 +74,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         {/* Favicons */}
         <link rel="icon" href="/favicon.ico" />
@@ -86,20 +90,28 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
-
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#000000" />
-
         {/* Viewport meta tag for responsive design */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundary>
-          <AuthProvider>
-            <ClientLayoutProvider>
-              {children}
-            </ClientLayoutProvider>
-          </AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              <SidebarProvider>
+                <ClientLayoutProvider>
+                  {children}
+                </ClientLayoutProvider>
+                <Toaster />
+              </SidebarProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>
