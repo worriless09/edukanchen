@@ -65,7 +65,7 @@ class ErrorBoundary extends React.Component<Props, State> {
                 Oops! Something went wrong
               </h1>
               <p className="text-gray-600 mb-6">
-                We encountered an unexpected error. Don't worry, our team has been notified.
+                We encountered an unexpected error. Do not worry, our team has been notified.
               </p>
             </div>
 
