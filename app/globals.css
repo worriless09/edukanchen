@@ -1,4 +1,15 @@
-/* app/globals.css - ADD THESE STYLES TO YOUR EXISTING FILE */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your existing custom styles below */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ... rest of your existing CSS ... *//* app/globals.css - ADD THESE STYLES TO YOUR EXISTING FILE */
 
 /* Fix layout conflicts and spacing issues */
 html, body {
