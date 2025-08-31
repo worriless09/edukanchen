@@ -1,182 +1,219 @@
-// components/flashcards/FlashcardCreator.tsx
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/components/auth/AuthProvider';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { X, Plus } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { X, Plus, Save } from 'lucide-react'
 
-interface FlashcardCreatorProps {
-  onClose: () => void;
-  onCardCreated: () => void;
-  defaultSubject?: string;
-  defaultCategory?: string;
+interface FlashcardData {
+  front: string
+  back: string
+  category: string
+  difficulty: number
+  createdFrom: 'manual' | 'notes' | 'ai'
+  concepts: string[]
+  memoryTechnique?: string
 }
 
-export default function FlashcardCreator({ 
-  onClose, 
-  onCardCreated, 
-  defaultSubject,
-  defaultCategory 
-}: FlashcardCreatorProps) {
-  const [formData, setFormData] = useState({
-    subject: defaultSubject || '',
-    category: defaultCategory || '',
-    question: '',
-    answer: '',
-    difficulty_level: 3,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { user } = useAuth();
-  const supabase = createClient();
+interface FlashcardCreatorProps {
+  onClose: () => void
+  onSave: (card: FlashcardData) => void
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
+const CATEGORIES = [
+  'History',
+  'Geography', 
+  'Polity',
+  'Economics',
+  'Science & Technology',
+  'Current Affairs',
+  'General Studies',
+  'Mathematics',
+  'Reasoning',
+  'English'
+]
 
-    setLoading(true);
-    setError('');
+export function FlashcardCreator({ onClose, onSave }: FlashcardCreatorProps) {
+  const [formData, setFormData] = useState<FlashcardData>({
+    front: '',
+    back: '',
+    category: 'General Studies',
+    difficulty: 3,
+    createdFrom: 'manual',
+    concepts: [],
+    memoryTechnique: ''
+  })
+  
+  const [newConcept, setNewConcept] = useState('')
 
-    try {
-      const { error } = await supabase
-        .from('flashcards')
-        .insert({
-          user_id: user.id,
-          ...formData,
-          next_review_date: new Date().toISOString(),
-          review_count: 0,
-          ease_factor: 2.5,
-          interval_days: 1,
-        });
-
-      if (error) throw error;
-
-      onCardCreated();
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.front.trim() || !formData.back.trim()) {
+      return
     }
-  };
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+    onSave(formData)
+    onClose()
+  }
+
+  const addConcept = () => {
+    if (newConcept.trim() && !formData.concepts.includes(newConcept.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        concepts: [...prev.concepts, newConcept.trim()]
+      }))
+      setNewConcept('')
+    }
+  }
+
+  const removeConcept = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      concepts: prev.concepts.filter((_, i) => i !== index)
+    }))
+  }
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Create New Flashcard</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Create New Flashcard</CardTitle>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Question (Front) */}
             <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-                id="subject"
-                value={formData.subject}
-                onChange={(e) => handleInputChange('subject', e.target.value)}
-                placeholder="e.g., History, Geography, Polity"
+              <Label htmlFor="front">Question / Front Side</Label>
+              <Textarea
+                id="front"
+                placeholder="Enter the question or prompt..."
+                value={formData.front}
+                onChange={(e) => setFormData(prev => ({ ...prev, front: e.target.value }))}
+                rows={3}
                 required
               />
             </div>
-            
+
+            {/* Answer (Back) */}
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => handleInputChange('category', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="upsc">UPSC</SelectItem>
-                  <SelectItem value="ssc">SSC</SelectItem>
-                  <SelectItem value="banking">Banking</SelectItem>
-                  <SelectItem value="railway">Railway</SelectItem>
-                  <SelectItem value="defense">Defense</SelectItem>
-                  <SelectItem value="state-pcs">State PCS</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="back">Answer / Back Side</Label>
+              <Textarea
+                id="back"
+                placeholder="Enter the answer or explanation..."
+                value={formData.back}
+                onChange={(e) => setFormData(prev => ({ ...prev, back: e.target.value }))}
+                rows={4}
+                required
+              />
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="question">Question</Label>
-            <Textarea
-              id="question"
-              value={formData.question}
-              onChange={(e) => handleInputChange('question', e.target.value)}
-              placeholder="Enter your question here..."
-              className="min-h-24"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="answer">Answer</Label>
-            <Textarea
-              id="answer"
-              value={formData.answer}
-              onChange={(e) => handleInputChange('answer', e.target.value)}
-              placeholder="Enter the answer here..."
-              className="min-h-32"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="difficulty">Difficulty Level</Label>
-            <Select 
-              value={formData.difficulty_level.toString()} 
-              onValueChange={(value) => handleInputChange('difficulty_level', parseInt(value))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 - Very Easy</SelectItem>
-                <SelectItem value="2">2 - Easy</SelectItem>
-                <SelectItem value="3">3 - Medium</SelectItem>
-                <SelectItem value="4">4 - Hard</SelectItem>
-                <SelectItem value="5">5 - Very Hard</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Flashcard'}
-              <Plus className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
+
+            {/* Category & Difficulty */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="difficulty">Difficulty (1-10)</Label>
+                <Input
+                  id="difficulty"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.difficulty}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    difficulty: parseInt(e.target.value) || 3 
+                  }))}
+                />
+              </div>
+            </div>
+
+            {/* Concepts */}
+            <div className="space-y-2">
+              <Label>Key Concepts (Optional)</Label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  placeholder="Add a concept..."
+                  value={newConcept}
+                  onChange={(e) => setNewConcept(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addConcept())}
+                />
+                <Button type="button" onClick={addConcept} size="sm">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {formData.concepts.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.concepts.map((concept, index) => (
+                    <div 
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      {concept}
+                      <button
+                        type="button"
+                        onClick={() => removeConcept(index)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Memory Technique */}
+            <div className="space-y-2">
+              <Label htmlFor="memoryTechnique">Memory Technique (Optional)</Label>
+              <Textarea
+                id="memoryTechnique"
+                placeholder="Enter a memory aid, mnemonic, or study tip..."
+                value={formData.memoryTechnique}
+                onChange={(e) => setFormData(prev => ({ ...prev, memoryTechnique: e.target.value }))}
+                rows={2}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-4">
+              <Button type="submit" className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Create Flashcard
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
