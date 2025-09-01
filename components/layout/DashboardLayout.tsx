@@ -17,7 +17,6 @@ import {
   Settings, 
   LogOut, 
   Menu,
-  X,
   Crown,
   User
 } from 'lucide-react';
@@ -132,16 +131,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar + Trigger */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64">
-          <Sidebar mobile />
-        </SheetContent>
-      </Sheet>
-
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top Navigation */}
         <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 md:hidden">
           <SheetTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -158,7 +149,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Avatar>
         </header>
 
-        {/* Page Content */}
+        <SheetContent side="left" className="p-0 w-64">
+          <Sidebar mobile />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

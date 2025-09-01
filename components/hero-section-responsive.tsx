@@ -76,7 +76,7 @@ export function HeroSectionResponsive() {
               </h1>
               
               <p className="text-lg md:text-xl lg:text-1.5xl text-gray-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
-                Join India's most innovative coaching institute combining traditional teaching excellence with{" "}
+                Join India&apos;s most innovative coaching institute combining traditional teaching excellence with{" "}
                 <span className="font-semibold text-cyan-800">AI-powered learning tools</span>. 
                 Specialized preparation for UPSC, SSC, and State PCS examinations.
               </p>

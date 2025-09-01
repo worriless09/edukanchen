@@ -63,12 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return {};
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { error: error.message };
     }
   };
 
-  const signUp = async (email: string, password: string, userData?: any) => {
+  const signUp = async (email: string, password: string, userData?: unknown) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -112,12 +112,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       toast.success('Password reset email sent');
       return {};
-    } catch (error: any) {
+    } catch (error: never) {
       return { error: error.message };
     }
   };
 
-  const updateProfile = async (updates: any) => {
+  const updateProfile = async (updates: never) => {
     try {
       const { error } = await supabase.auth.updateUser(updates);
 
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       toast.success('Profile updated successfully');
       return {};
-    } catch (error: any) {
+    } catch (error: never) {
       return { error: error.message };
     }
   };
