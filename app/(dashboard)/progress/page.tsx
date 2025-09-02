@@ -138,7 +138,7 @@ export default function ProgressPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <div className="text-3xl font-bold text-blue-600">{progressData.streak} days</div>
-                    <div className="text-gray-600">Keep going! You're on fire!</div>
+                    <div className="text-gray-600">Keep going! You&apos;re on fire!</div>
                   </div>
                   <div className="text-6xl">🔥</div>
                 </div>

@@ -1,3 +1,4 @@
+// app/(dashboard)/dashboard/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -61,7 +62,7 @@ export default function DashboardPage() {
   return (
     <ErrorBoundary 
       fallback={
-        <div className="p-6 text-center">
+        <div className="text-center">
           <p className="text-red-600 mb-4">Something went wrong loading the dashboard.</p>
           <button 
             onClick={() => window.location.reload()} 
@@ -72,81 +73,9 @@ export default function DashboardPage() {
         </div>
       }
     >
-      <div className="p-6 space-y-8">
-        {/* Stats + Analytics + Courses */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Courses</p>
-                    <p className="text-2xl font-bold">
-                      {stats.completedCourses}/{stats.totalCourses}
-                    </p>
-                  </div>
-                  <BookOpen className="h-8 w-8 text-blue-500" />
-                </div>
-                <div className="mt-4">
-                  <Progress
-                    value={courseProgress}
-                    className="h-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {Math.round(courseProgress)}% complete
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Flashcards Due</p>
-                    <p className="text-2xl font-bold text-red-600">{stats.dueFlashcards}</p>
-                  </div>
-                  <Brain className="h-8 w-8 text-purple-500" />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Total: {stats.totalFlashcards} cards
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Test Average</p>
-                    <p className="text-2xl font-bold text-green-600">{stats.averageScore}%</p>
-                  </div>
-                  <Target className="h-8 w-8 text-green-500" />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  {stats.totalTestAttempts} tests taken
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Performance</p>
-                    <div className="flex items-center">
-                      <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                      <p className="text-2xl font-bold text-green-600">+12%</p>
-                    </div>
-                  </div>
-                  <Award className="h-8 w-8 text-yellow-500" />
-                </div>
-                <p className="text-sm text-gray-600 mt-2">vs last month</p>
-              </CardContent>
-            </Card>
-          </div>
+          
 
           {/* Right column: Analytics + Courses */}
           <div className="space-y-6">
@@ -167,9 +96,7 @@ export default function DashboardPage() {
                 <CourseDashboard courseId="dashboard-overview" />
               </CardContent>
             </Card>
-          </div>
-        </div>
-
+         
         {/* Placeholder for additional sections */}
         {/* Uncomment and implement as needed */}
         {/* 

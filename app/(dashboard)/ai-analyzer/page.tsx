@@ -1,4 +1,4 @@
-import { QuestionAnalyzer } from '@/components/QuestionAnalyzer'
+import  QuestionAnalyzer  from '@/components/QuestionAnalyzer'
 
 export default function AIAnalyzerPage() {
   return (

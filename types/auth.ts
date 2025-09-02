@@ -1,5 +1,5 @@
 // types/auth.ts
-export interface User {
+export interface AuthUser {
   id: string;
   email: string;
   full_name?: string;

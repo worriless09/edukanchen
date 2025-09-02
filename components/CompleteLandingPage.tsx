@@ -13,111 +13,40 @@ import {
   AlertTriangle, RefreshCw
 } from "lucide-react"
 import Link from "next/link"
-import { useRef } from "react"
-
-
-// Profile Dropdown Component
-function ProfileDropdown() {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const profileDropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: { target: unknown }) {
-      if (
-        profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target)
-      ) {
-        setIsProfileOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <div className="relative" ref={profileDropdownRef}>
-      <button
-        onClick={() => setIsProfileOpen(!isProfileOpen)}
-        className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors"
-      >
-        <span className="text-white text-sm font-medium">👤</span>
-      </button>
-
-      {isProfileOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-          <Link
-            href="/profile"
-            className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            onClick={() => setIsProfileOpen(false)}
-          >
-            Profile
-          </Link>
-          <Link
-            href="/settings"
-            className="block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            onClick={() => setIsProfileOpen(false)}
-          >
-            Settings
-          </Link>
-          <hr className="my-2 border-gray-200" />
-          <button
-            className="block w-full text-left px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            onClick={() => {
-              setIsProfileOpen(false);
-              // Add your logout logic here
-              console.log('User signed out');
-            }}
-          >
-            Sign Out
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Header Component
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [studyDropdownOpen, setStudyDropdownOpen] = useState(false)
 
-    function setIsProfileOpen(arg0: boolean): void {
-        throw new Error("Function not implemented.")
-    }
-
-    function handleClickOutside(this: Document, ev: MouseEvent) {
-        throw new Error("Function not implemented.")
-    }
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-white border-b border-gray-200 shadow-sm">
+      <div className="container mx-auto px-2">
+        <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
+          <a href="/" className="flex place-items-center space-x-2">
             <img 
-  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
-  alt="Kanchen Academy Logo"
-  className="w-24 h-14 object-contain"
-/>
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
+              alt="Kanchen Academy Logo"
+              className="w-32 h-18 object-contain"
+            />
             <div>
-              <div className="font-bold text-xl text-gray-900">Kanchen Academy</div>
+              <div className="font-bold text-l text-gray-900">Kanchen Academy</div>
               <div className="text-xs text-gray-500 hidden sm:block">Your Learning Companion</div>
             </div>
-          </Link>
+          </a>
 
           {/* Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-1">
             <a href="#home" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
               🏠 Home
             </a>
             <a href="#courses" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
               🎯 Courses
+            </a>
+            <a href="#study-ecosystem" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
+              📚 Study Ecosystem
             </a>
             <a href="#features" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
               📊 Features
@@ -125,50 +54,19 @@ function Header() {
             <a href="#faculty" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
               👨‍🏫 Faculty
             </a>
-            
-            <div className="relative">
-              <button 
-                className="flex items-center px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
-                onClick={() => setStudyDropdownOpen(!studyDropdownOpen)}
-              >
-                📚 Study Tools
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              
-              {studyDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                  <a href="/ai-analyzer" className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    🧠 AI Analyzer
-                  </a>
-                  <a href="/flashcards" className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    🗂️ Flashcards
-                  </a>
-                  <a href="/mock-tests" className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    📋 Mock Tests
-                  </a>
-                  <a href="/pyqs" className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    ❓ Previous Year Questions
-                  </a>
-                </div>
-              )}
-            </div>
-          </nav>
+           
+                </nav>
 
-          {/* Right Side - Auth buttons and Profile */}
+          {/* Right Side - Auth buttons */}
           <div className="flex items-center space-x-3">
             <div className="hidden lg:flex items-center space-x-3">
               <a href="/login">
                 <Button variant="ghost" className="font-medium">Login</Button>
               </a>
               <a href="/register">
-                <Button className="bg-blue-600 hover:bg-blue-700 font-medium px-6">Book Trial</Button>
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">Book Trial</Button>
               </a>
-              
-              {/* Profile Dropdown */}
-              <ProfileDropdown />
             </div>
-
-
 
             {/* Mobile Menu Button */}
             <Button
@@ -239,17 +137,15 @@ function HeroSection() {
     return () => clearInterval(interval)
   }, [])
 
-const getColorClasses = (color: string) => {
-  const colorMap: Record<"blue" | "green" | "purple" | "yellow", string> = {
-    blue: "bg-blue-50 text-blue-700 border-blue-100",
-    green: "bg-green-50 text-green-700 border-green-100",
-    purple: "bg-purple-50 text-purple-700 border-purple-100",
-    yellow: "bg-yellow-50 text-yellow-700 border-yellow-100",
+  const getColorClasses = (color: string) => {
+    const colorMap = {
+      blue: "bg-blue-50 text-blue-700 border-blue-100",
+      green: "bg-green-50 text-green-700 border-green-100", 
+      purple: "bg-purple-50 text-purple-700 border-purple-100",
+      yellow: "bg-yellow-50 text-yellow-700 border-yellow-100"
+    }
+    return colorMap[color] || colorMap.blue
   }
-
-  return colorMap[color as keyof typeof colorMap] ?? colorMap.blue
-}
-
 
   return (
     <section id="home" className="relative pt-16 min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
@@ -448,7 +344,7 @@ function ExamCategoriesSection() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {examCategories.map((exam, index) => (
-            <Card key={index} className={`relative overflow-hidden border-0 shadow-xl ${exam.popular ? 'ring-2 ring-blue-500' : ''}`}>
+            <Card key={index} className={`className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100" : ''}`}>
               {exam.popular && (
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-blue-500 text-white">Most Popular</Badge>
@@ -1262,7 +1158,7 @@ function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 Kanchen Academy. All rights reserved. | Privacy Policy | Terms of Service</p>
+          <p>&copy; 2024 Kanchen Academy. All rights reserved. | Privacy Policy | Terms of Service</p>
         </div>
       </div>
     </footer>

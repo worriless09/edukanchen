@@ -1,3 +1,5 @@
+import path from 'path'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -10,14 +12,15 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-  optimizeCss: true,
-  optimizePackageImports: [
-    '@radix-ui/react-icons',
-    'lucide-react',
-    '@supabase/supabase-js',
-  ],
-},
+    optimizeCss: true,
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      'lucide-react',
+      '@supabase/supabase-js',
+    ],
+  },
+  // Fix workspace root warning
+  outputFileTracingRoot: path.join(process.cwd()),
 }
 
-export default nextConfig
-
+export default nextConfig   // <-- moved to bottom

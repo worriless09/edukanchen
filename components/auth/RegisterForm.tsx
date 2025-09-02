@@ -1,4 +1,3 @@
-// components/auth/RegisterForm.tsx
 'use client';
 
 import { useState } from 'react';
@@ -9,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -20,7 +18,6 @@ export default function RegisterForm() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
   const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,8 +38,8 @@ export default function RegisterForm() {
         options: {
           data: {
             full_name: formData.fullName,
-          }
-        }
+          },
+        },
       });
 
       if (error) throw error;
@@ -59,11 +56,16 @@ export default function RegisterForm() {
           });
 
         if (profileError) console.error('Profile creation error:', profileError);
-      }
 
-      router.push('/dashboard');
-    } catch (error: any) {
-      setError(error.message);
+        // ✅ Redirect through callback for consistency
+        window.location.href = `/auth/callback?next=/dashboard`;
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -92,7 +94,7 @@ export default function RegisterForm() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
               <Input
@@ -105,7 +107,7 @@ export default function RegisterForm() {
                 placeholder="Enter your full name"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -118,7 +120,7 @@ export default function RegisterForm() {
                 placeholder="Enter your email"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -132,7 +134,7 @@ export default function RegisterForm() {
                 minLength={6}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
@@ -146,11 +148,11 @@ export default function RegisterForm() {
                 minLength={6}
               />
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
-            
+
             <div className="text-center text-sm">
               Already have an account?{' '}
               <Link href="/login" className="text-blue-600 hover:underline">

@@ -103,7 +103,7 @@ export default function StudentDashboard() {
     study_goals: StudyGoal[];
     upcoming_events: UpcomingEvent[];
     learning_insights: LearningInsight[];
-    enrolled_courses: any[];
+    enrolled_courses: unknown[];
     due_flashcards: any[];
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);

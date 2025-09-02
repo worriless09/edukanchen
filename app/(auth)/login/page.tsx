@@ -12,14 +12,12 @@ export default function LoginPage() {
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/kanchen-m9v7Y6xyNyNxVd7iwVDUqCPKEbRfrc.png"
             alt="Kanchen Academy Logo"
-            width={80}
-            height={80}
+            width={100}
+            height={100}
             className="rounded-full shadow-md"
             priority
           />
-          <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">KA</span>
-          </div>
+          
         </div>
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
           Welcome back to Kanchen Academy
@@ -33,7 +31,7 @@ export default function LoginPage() {
       
       <div className="text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link 
             href="/register" 
             className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
